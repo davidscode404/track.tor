@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Drawer,
   DrawerClose,
@@ -305,23 +306,28 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                     <span className="text-[10px] font-medium uppercase tracking-wider text-white/40">
                       Crop
                     </span>
-                    <div className="flex rounded-full border border-white/20 bg-white/5">
+                    <ButtonGroup
+                      aria-label="Select crop type"
+                      className="[--radius:9999rem] rounded-full border border-white/20 bg-white/5"
+                    >
                       {CROP_OPTIONS.map((opt) => (
-                        <button
+                        <Button
                           key={opt.value}
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setCrop(opt.value)}
-                          className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                          className={`h-auto px-3 py-1.5 text-xs font-medium transition-colors ${
                             crop === opt.value
-                              ? "bg-emerald-500/30 text-emerald-300"
-                              : "text-white/60 hover:text-white/80"
+                              ? "bg-emerald-500/30 text-emerald-300 hover:bg-emerald-500/40 hover:text-emerald-300"
+                              : "text-white/60 hover:bg-white/5 hover:text-white/80"
                           }`}
                         >
                           <span className="mr-1">{opt.emoji}</span>
                           {opt.label}
-                        </button>
+                        </Button>
                       ))}
-                    </div>
+                    </ButtonGroup>
                   </div>
                   <WeatherPanel weather={weather} periodDays={periodDays} />
                   <div className="flex flex-col gap-3 border-t border-white/10 p-5">
