@@ -226,7 +226,7 @@ function DayDetail({ day, isBest }: { day: DayPlan; isBest: boolean }) {
         {day.fertReason}
       </p>
 
-      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-4">
+      <div className="mt-3 grid grid-cols-3 gap-x-4 gap-y-2 text-xs sm:grid-cols-4">
         <Stat
           icon={CloudRain}
           iconColor="text-sky-400"
@@ -299,7 +299,7 @@ function Stat({
     <div className="flex items-center gap-1.5">
       <Icon className={`size-3 ${iconColor}`} />
       <span className="text-white/50">{label}</span>
-      <span className="font-mono text-white/85">{value}</span>
+      <span className="font-mono  text-white/85">{value}</span>
     </div>
   );
 }
@@ -339,7 +339,10 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
 
   return (
     <div className="rounded-lg border border-white/15 bg-white/8 p-3">
-      <ChartContainer config={deficitChartConfig} className="h-[180px] w-full">
+      <ChartContainer
+        config={deficitChartConfig}
+        className="h-[180px] w-full [&_.recharts-cartesian-axis-tick_text]:!fill-[#ffffff]"
+      >
         <BarChart
           data={chartData}
           margin={{ left: 12, right: 12, top: 8, bottom: 0 }}
@@ -354,7 +357,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tick={{ fill: "#ffffff", fontSize: 11 }}
+            tick={{ fill: "#94a3b8", fontSize: 11 }}
             minTickGap={24}
           />
           <YAxis
@@ -362,7 +365,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tick={{ fill: "#ffffff", fontSize: 11 }}
+            tick={{ fill: "#94a3b8", fontSize: 11 }}
             tickFormatter={(v) => `${v}mm`}
             domain={[0, "auto"]}
           />
