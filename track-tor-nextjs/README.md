@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fertilization Timing (UK)
 
-## Getting Started
+Select a UK location on the map, check rain and sun weather, and determine when to fertilize. Built with Next.js, Mapbox, and shadcn UI.
 
-First, run the development server:
+## Features
+
+- **Step 1**: Fullscreen map — click to select a location (lat/lng) in the UK
+- **Step 2**: Weather check — rain (mm) and sunshine (hours) for the next 7 days
+- **Step 3**: When to fertilize — overall recommendation plus day-by-day outlook for the next week
+
+## Environment Variables
+
+Create `.env.local`:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+MAP_BOX_ACCESS_TOKEN=your_mapbox_public_token
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Optional (for future features):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Local Development
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open `http://localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Quality Checks
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run lint
+npm run test
+npm run build
+```
 
-## Deploy on Vercel
+## API Routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `GET /api/weather` — Weather by `lat` and `lng` (or `farmId` for legacy)
+- `POST /api/fertilize` — Fertilization recommendation for `{ lat, lng }`
