@@ -6,9 +6,8 @@ import { CloudRain, Loader2, MapPin, RotateCcw, Sprout, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { WeatherPanel } from "./weather-summary";
-import { RecommendationPanel } from "./fertilize-recommendation";
-import type { FertilizeRecommendation } from "@/lib/fertilize";
-import type { WeatherSummary } from "@/lib/types";
+import { PlannerPanel } from "./planner-results";
+import type { CropType, PlannerResult, WeatherSummary } from "@/lib/types";
 
 const DynamicLocationPickerMap = dynamic(
   () => import("./location-picker-map").then((mod) => mod.LocationPickerMap),
@@ -36,7 +35,7 @@ type WeatherApiResponse = ApiErrorPayload & {
 
 type FertilizeApiResponse = ApiErrorPayload & {
   weather?: WeatherSummary;
-  recommendation?: FertilizeRecommendation;
+  plan?: PlannerResult;
 };
 
 function getApiErrorMessage(payload: ApiErrorPayload, fallback: string): string {
@@ -64,14 +63,20 @@ async function parseResponseJson<T>(response: Response): Promise<T> {
 
 type PeriodDays = 7 | 14;
 
+const CROP_OPTIONS: { value: CropType; label: string; emoji: string }[] = [
+  { value: "lettuce", label: "Lettuce", emoji: "🥬" },
+  { value: "onion", label: "Onion", emoji: "🧅" },
+  { value: "potato", label: "Potato", emoji: "🥔" },
+];
+
 export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
   const [step, setStep] = useState(1);
-  const [periodDays, setPeriodDays] = useState<PeriodDays>(7);
+  const [periodDays, setPeriodDays] = useState<PeriodDays>(14);
+  const [crop, setCrop] = useState<CropType>("lettuce");
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [weather, setWeather] = useState<WeatherSummary | null>(null);
-  const [recommendation, setRecommendation] =
-    useState<FertilizeRecommendation | null>(null);
+  const [plan, setPlan] = useState<PlannerResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,7 +85,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       setLat(newLat);
       setLng(newLng);
       setWeather(null);
-      setRecommendation(null);
+      setPlan(null);
       setError(null);
       if (step !== 1) setStep(1);
     },
@@ -124,7 +129,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
     fetchWeather(periodDays);
   }, [fetchWeather, periodDays]);
 
-  const handleGetRecommendation = useCallback(async () => {
+  const handleGetPlan = useCallback(async () => {
     if (lat == null || lng == null) return;
     setLoading(true);
     setError(null);
@@ -139,33 +144,34 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         body: JSON.stringify({
           lat,
           lng,
+          crop,
           periodStart: today,
           periodEnd: endDate,
         }),
       });
       const data = await parseResponseJson<FertilizeApiResponse>(res);
       if (!res.ok) {
-        throw new Error(getApiErrorMessage(data, "Recommendation failed"));
+        throw new Error(getApiErrorMessage(data, "Plan generation failed"));
       }
-      if (!data.recommendation) {
-        throw new Error("Recommendation response is missing recommendation data.");
+      if (!data.plan) {
+        throw new Error("Response is missing plan data.");
       }
-      setRecommendation(data.recommendation);
+      setPlan(data.plan);
       if (data.weather) setWeather(data.weather);
       setStep(3);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to get recommendation");
+      setError(e instanceof Error ? e.message : "Failed to generate plan");
     } finally {
       setLoading(false);
     }
-  }, [lat, lng, periodDays]);
+  }, [lat, lng, periodDays, crop]);
 
   const handleStartOver = useCallback(() => {
     setStep(1);
     setLat(null);
     setLng(null);
     setWeather(null);
-    setRecommendation(null);
+    setPlan(null);
     setError(null);
   }, []);
 
@@ -300,6 +306,30 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                   </button>
                 </div>
               </div>
+
+              <div className="flex items-center gap-2 px-5 pt-3">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-white/30">
+                  Crop
+                </span>
+                <div className="flex rounded-full border border-white/20 bg-white/5">
+                  {CROP_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setCrop(opt.value)}
+                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                        crop === opt.value
+                          ? "bg-emerald-500/30 text-emerald-300"
+                          : "text-white/60 hover:text-white/80"
+                      }`}
+                    >
+                      <span className="mr-1">{opt.emoji}</span>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <WeatherPanel weather={weather} periodDays={periodDays} />
               <div className="flex items-center justify-between border-t border-white/10 px-5 py-4">
                 <button
@@ -310,7 +340,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                 </button>
                 <Button
                   size="sm"
-                  onClick={handleGetRecommendation}
+                  onClick={handleGetPlan}
                   disabled={loading}
                   className="gap-1.5 rounded-full bg-emerald-500 text-white hover:bg-emerald-400"
                 >
@@ -319,7 +349,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                   ) : (
                     <Sprout className="size-3.5" />
                   )}
-                  Get Recommendation
+                  Get Plan
                 </Button>
               </div>
               {error && (
@@ -330,13 +360,13 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         </div>
       )}
 
-      {step === 3 && recommendation && (
+      {step === 3 && plan && (
         <div className="fixed inset-x-0 bottom-0 z-20 animate-slide-up">
           <div className="mx-auto max-w-2xl">
             <div className="rounded-t-2xl border border-b-0 border-white/15 bg-black/70 shadow-2xl backdrop-blur-xl">
               <div className="flex items-center justify-between px-5 pt-4">
                 <span className="text-xs font-semibold tracking-widest text-white/50 uppercase">
-                  Recommendation
+                  Plan
                 </span>
                 <button
                   onClick={handleDismissPanel}
@@ -345,10 +375,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                   <X className="size-4" />
                 </button>
               </div>
-              <RecommendationPanel
-                recommendation={recommendation}
-                weather={weather}
-              />
+              <PlannerPanel plan={plan} />
               <div className="flex items-center justify-center border-t border-white/10 px-5 py-4">
                 <Button
                   size="sm"

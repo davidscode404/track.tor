@@ -27,6 +27,35 @@ export interface DailyWeather {
   date: string;
   rainMm: number;
   temperatureC: number;
+  minTemperatureC: number;
+  maxTemperatureC: number;
+}
+
+export type CropType = "lettuce" | "onion" | "potato";
+
+export type FertStatus = "good" | "rejected" | "irrigate-in" | "none";
+
+export interface DayPlan {
+  date: string;
+  eto: number;
+  etc: number;
+  effectiveRain: number;
+  deficit: number;
+  irrigate: boolean;
+  irrigationMm: number;
+  fertStatus: FertStatus;
+  fertReason: string;
+  fertIrrigationMm: number;
+  rainMm: number;
+  temperatureC: number;
+  maxTemperatureC: number;
+}
+
+export interface PlannerResult {
+  crop: CropType;
+  days: DayPlan[];
+  bestFertDay: DayPlan | null;
+  summary: string;
 }
 
 export interface WeatherSummary {

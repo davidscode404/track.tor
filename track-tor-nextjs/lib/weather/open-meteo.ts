@@ -74,7 +74,10 @@ class OpenMeteoWeatherProvider implements WeatherProvider {
       (await temperatureResponse.json()) as TemperatureEntry[];
 
     const rainByDate = new Map<string, number>();
-    const tempByDate = new Map<string, { sum: number; count: number }>();
+    const tempByDate = new Map<
+      string,
+      { sum: number; count: number; min: number; max: number }
+    >();
 
     for (const entry of rainfallEntries) {
       const date = getDate(entry.time);
@@ -90,10 +93,17 @@ class OpenMeteoWeatherProvider implements WeatherProvider {
     for (const entry of temperatureEntries) {
       const date = getDate(entry.time);
       if (date < input.from || date > input.to) continue;
-      const current = tempByDate.get(date) ?? { sum: 0, count: 0 };
       const temperature = Number(entry.temperature_c ?? 0);
+      const current = tempByDate.get(date) ?? {
+        sum: 0,
+        count: 0,
+        min: temperature,
+        max: temperature,
+      };
       current.sum += temperature;
       current.count += 1;
+      current.min = Math.min(current.min, temperature);
+      current.max = Math.max(current.max, temperature);
       tempByDate.set(date, current);
       temperatureSum += temperature;
       temperatureCount += 1;
@@ -107,10 +117,13 @@ class OpenMeteoWeatherProvider implements WeatherProvider {
       .sort((a, b) => a.localeCompare(b))
       .map((date) => {
         const temp = tempByDate.get(date);
+        const mean = temp && temp.count > 0 ? temp.sum / temp.count : 0;
         return {
           date,
           rainMm: rainByDate.get(date) ?? 0,
-          temperatureC: temp && temp.count > 0 ? temp.sum / temp.count : 0,
+          temperatureC: mean,
+          minTemperatureC: temp ? temp.min : mean,
+          maxTemperatureC: temp ? temp.max : mean,
         };
       });
 
@@ -133,15 +146,13 @@ class OpenMeteoWeatherProvider implements WeatherProvider {
       drySeason,
       rainAnomaly,
       windStress: 0.4,
-      daily:
-        input.daily && dayCount <= 14 && daily.length > 0 ? daily : undefined,
+      daily: input.daily && daily.length > 0 ? daily : undefined,
       rawPayload: {
         lat: input.lat,
         lng: input.lng,
         rainfallEntries,
         temperatureEntries,
       },
-      note: "Weather data from FastAPI rainfall/temperature endpoints.",
     };
   }
 }
