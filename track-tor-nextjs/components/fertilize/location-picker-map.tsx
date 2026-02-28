@@ -18,7 +18,10 @@ export function LocationPickerMap({
   const markerRef = useRef<mapboxgl.Marker | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const onLocationSelectRef = useRef(onLocationSelect);
-  onLocationSelectRef.current = onLocationSelect;
+
+  useEffect(() => {
+    onLocationSelectRef.current = onLocationSelect;
+  }, [onLocationSelect]);
 
   useEffect(() => {
     const container = containerRef.current;
