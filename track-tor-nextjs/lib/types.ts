@@ -26,7 +26,7 @@ export interface MonthlyRecord {
 export interface DailyWeather {
   date: string;
   rainMm: number;
-  sunHours: number;
+  temperatureC: number;
 }
 
 export interface WeatherSummary {
@@ -34,7 +34,7 @@ export interface WeatherSummary {
   periodStart: string;
   periodEnd: string;
   rainMm: number;
-  sunHours: number;
+  avgTemperatureC: number;
   avgWindMps: number;
   dryIndex: number;
   drySeason: boolean;

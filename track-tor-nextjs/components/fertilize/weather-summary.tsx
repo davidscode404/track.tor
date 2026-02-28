@@ -1,6 +1,6 @@
 "use client";
 
-import { CloudRain, Sun } from "lucide-react";
+import { CloudRain, Thermometer } from "lucide-react";
 
 import type { DailyWeather, WeatherSummary } from "@/lib/types";
 
@@ -37,14 +37,14 @@ export function WeatherPanel({ weather }: WeatherPanelProps) {
         </div>
         <div>
           <div className="flex items-center gap-2 text-white/40">
-            <Sun className="size-4" />
+            <Thermometer className="size-4" />
             <span className="text-xs font-medium uppercase tracking-wider">
-              Sunshine
+              Temperature
             </span>
           </div>
           <p className="mt-1 font-mono text-3xl font-bold text-white">
-            {weather.sunHours.toFixed(1)}
-            <span className="ml-1 text-base font-normal text-white/40">hrs</span>
+            {weather.avgTemperatureC.toFixed(1)}
+            <span className="ml-1 text-base font-normal text-white/40">&deg;C</span>
           </p>
         </div>
       </div>
@@ -85,8 +85,8 @@ function DayCard({ day }: { day: DailyWeather }) {
           {day.rainMm.toFixed(1)}
         </span>
         <span className="flex items-center gap-1 text-sm font-medium text-amber-300">
-          <Sun className="size-3" />
-          {day.sunHours.toFixed(1)}
+          <Thermometer className="size-3" />
+          {day.temperatureC.toFixed(1)}
         </span>
       </div>
     </div>

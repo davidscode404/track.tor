@@ -7,7 +7,7 @@ import {
   XCircle,
   MinusCircle,
   CloudRain,
-  Sun,
+  Thermometer,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -166,9 +166,9 @@ export function RecommendationPanel({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Sun className="size-3.5 text-amber-400/60" />
+                <Thermometer className="size-3.5 text-amber-400/60" />
                 <span className="font-mono text-sm text-white/70">
-                  {weather.sunHours.toFixed(1)} hrs
+                  {weather.avgTemperatureC.toFixed(1)} &deg;C
                 </span>
               </div>
             </div>
@@ -191,7 +191,7 @@ function ExpandedDayDetail({ day }: { day: FertilizeDayOutlook }) {
       <p className="mt-1.5 text-xs leading-relaxed text-white/50">{day.reason}</p>
       <div className="mt-2 flex gap-3 text-xs text-white/30">
         <span>{day.rainMm.toFixed(1)}mm rain</span>
-        <span>{day.sunHours.toFixed(1)}h sun</span>
+        <span>{day.temperatureC.toFixed(1)}&deg;C temp</span>
       </div>
     </div>
   );

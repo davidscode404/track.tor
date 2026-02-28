@@ -26,6 +26,42 @@ interface FertilizeWizardProps {
   mapboxToken: string;
 }
 
+type ApiErrorPayload = {
+  error?: { message?: string } | string;
+};
+
+type WeatherApiResponse = ApiErrorPayload & {
+  weather?: WeatherSummary;
+};
+
+type FertilizeApiResponse = ApiErrorPayload & {
+  weather?: WeatherSummary;
+  recommendation?: FertilizeRecommendation;
+};
+
+function getApiErrorMessage(payload: ApiErrorPayload, fallback: string): string {
+  if (typeof payload.error === "string" && payload.error.trim().length > 0) {
+    return payload.error;
+  }
+  if (typeof payload.error === "object" && payload.error?.message) {
+    return payload.error.message;
+  }
+  return fallback;
+}
+
+async function parseResponseJson<T>(response: Response): Promise<T> {
+  const text = await response.text();
+  if (!text) return {} as T;
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(
+      `Server returned invalid JSON (status ${response.status}). Check API logs.`
+    );
+  }
+}
+
 export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
   const [step, setStep] = useState(1);
   const [lat, setLat] = useState<number | null>(null);
@@ -61,9 +97,13 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         `/api/weather?lat=${lat}&lng=${lng}&from=${today}&to=${nextWeek}&daily=true`,
         { cache: "no-store" },
       );
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.error?.message ?? "Weather fetch failed");
+      const data = await parseResponseJson<WeatherApiResponse>(res);
+      if (!res.ok) {
+        throw new Error(getApiErrorMessage(data, "Weather fetch failed"));
+      }
+      if (!data.weather) {
+        throw new Error("Weather response is missing weather data.");
+      }
       setWeather(data.weather);
       setStep(2);
     } catch (e) {
@@ -83,9 +123,13 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lat, lng }),
       });
-      const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.error?.message ?? "Recommendation failed");
+      const data = await parseResponseJson<FertilizeApiResponse>(res);
+      if (!res.ok) {
+        throw new Error(getApiErrorMessage(data, "Recommendation failed"));
+      }
+      if (!data.recommendation) {
+        throw new Error("Recommendation response is missing recommendation data.");
+      }
       setRecommendation(data.recommendation);
       if (data.weather) setWeather(data.weather);
       setStep(3);

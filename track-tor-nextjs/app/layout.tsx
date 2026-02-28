@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Fertilization Timing | UK",
-  description: "Select a UK location, check rain and sun weather, and determine when to fertilize.",
+  description: "Select a UK location, check rain and temperature weather, and determine when to fertilize.",
 };
 
 export default function RootLayout({

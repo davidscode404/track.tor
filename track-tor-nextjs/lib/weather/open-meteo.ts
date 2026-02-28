@@ -1,22 +1,37 @@
 import "server-only";
 
 import { daysBetween } from "@/lib/date";
-import type { DailyWeather, WeatherProvider, WeatherSummary } from "@/lib/types";
+import type {
+  DailyWeather,
+  WeatherProvider,
+  WeatherSummary,
+} from "@/lib/types";
 
 function clamp(value: number, min = 0, max = 1): number {
   return Math.min(max, Math.max(min, value));
 }
 
-interface OpenMeteoDailyResponse {
-  daily?: {
-    time?: string[];
-    precipitation_sum?: (number | null)[];
-    sunshine_duration?: (number | null)[];
-  };
+interface RainfallEntry {
+  time: string;
+  precipitation_mm: number;
+  rain_mm: number;
+  snowfall_cm: number;
+}
+
+interface TemperatureEntry {
+  time: string;
+  temperature_c: number;
+  feels_like_c: number;
+}
+
+function getDate(time: string): string {
+  return time.slice(0, 10);
 }
 
 class OpenMeteoWeatherProvider implements WeatherProvider {
-  private readonly baseUrl = "https://api.open-meteo.com/v1/forecast";
+  private readonly baseUrl = (
+    process.env.NEXT_PUBLIC_BASE_API_URL ?? "http://127.0.0.1:8000"
+  ).replace(/\/$/, "");
 
   async getSummary(input: {
     lat: number;
@@ -25,62 +40,83 @@ class OpenMeteoWeatherProvider implements WeatherProvider {
     to: string;
     daily?: boolean;
   }): Promise<WeatherSummary> {
-    const dayCount = daysBetween(input.from, input.to);
-    const forecastDays = Math.min(16, Math.max(1, dayCount + 1));
-
-    const params = new URLSearchParams({
+    const dayCount = Math.max(1, daysBetween(input.from, input.to));
+    const sharedParams = new URLSearchParams({
       latitude: String(input.lat),
       longitude: String(input.lng),
-      daily: "precipitation_sum,sunshine_duration",
       timezone: "Europe/London",
-      forecast_days: String(forecastDays),
     });
+    const rainfallParams = new URLSearchParams(sharedParams);
+    rainfallParams.set("midday_only", "false");
 
-    const url = `${this.baseUrl}?${params.toString()}`;
-    const response = await fetch(url, { next: { revalidate: 3600 } });
+    const [rainfallResponse, temperatureResponse] = await Promise.all([
+      fetch(`${this.baseUrl}/rainfall?${rainfallParams.toString()}`, {
+        cache: "no-store",
+      }),
+      fetch(`${this.baseUrl}/temperature?${sharedParams.toString()}`, {
+        cache: "no-store",
+      }),
+    ]);
 
-    if (!response.ok) {
-      throw new Error(`Open-Meteo API error: ${response.status} ${response.statusText}`);
+    if (!rainfallResponse.ok) {
+      throw new Error(
+        `Weather API rainfall error: ${rainfallResponse.status} ${rainfallResponse.statusText}`,
+      );
+    }
+    if (!temperatureResponse.ok) {
+      throw new Error(
+        `Weather API temperature error: ${temperatureResponse.status} ${temperatureResponse.statusText}`,
+      );
     }
 
-    const data = (await response.json()) as OpenMeteoDailyResponse;
-    const dailyData = data.daily;
+    const rainfallEntries = (await rainfallResponse.json()) as RainfallEntry[];
+    const temperatureEntries =
+      (await temperatureResponse.json()) as TemperatureEntry[];
 
-    if (
-      !dailyData?.time?.length ||
-      !dailyData.precipitation_sum ||
-      !dailyData.sunshine_duration
-    ) {
-      throw new Error("Invalid Open-Meteo response: missing daily data");
+    const rainByDate = new Map<string, number>();
+    const tempByDate = new Map<string, { sum: number; count: number }>();
+
+    for (const entry of rainfallEntries) {
+      const date = getDate(entry.time);
+      if (date < input.from || date > input.to) continue;
+      rainByDate.set(
+        date,
+        (rainByDate.get(date) ?? 0) + Number(entry.precipitation_mm ?? 0),
+      );
     }
 
-    const fromTime = new Date(input.from).getTime();
-    const toTime = new Date(input.to).getTime();
-
-    const daily: DailyWeather[] = [];
-    let totalRainMm = 0;
-    let totalSunSeconds = 0;
-
-    for (let i = 0; i < dailyData.time.length; i++) {
-      const dateStr = dailyData.time[i];
-      if (!dateStr) continue;
-
-      const dateTime = new Date(dateStr + "T12:00:00Z").getTime();
-      if (dateTime < fromTime || dateTime > toTime) continue;
-
-      const rainMm = dailyData.precipitation_sum[i] ?? 0;
-      const sunSeconds = dailyData.sunshine_duration[i] ?? 0;
-      const sunHours = sunSeconds / 3600;
-
-      totalRainMm += rainMm;
-      totalSunSeconds += sunSeconds;
-
-      if (input.daily && dayCount <= 14) {
-        daily.push({ date: dateStr, rainMm, sunHours });
-      }
+    let temperatureSum = 0;
+    let temperatureCount = 0;
+    for (const entry of temperatureEntries) {
+      const date = getDate(entry.time);
+      if (date < input.from || date > input.to) continue;
+      const current = tempByDate.get(date) ?? { sum: 0, count: 0 };
+      const temperature = Number(entry.temperature_c ?? 0);
+      current.sum += temperature;
+      current.count += 1;
+      tempByDate.set(date, current);
+      temperatureSum += temperature;
+      temperatureCount += 1;
     }
 
-    const sunHours = totalSunSeconds / 3600;
+    const allDates = new Set<string>([
+      ...Array.from(rainByDate.keys()),
+      ...Array.from(tempByDate.keys()),
+    ]);
+    const daily: DailyWeather[] = Array.from(allDates)
+      .sort((a, b) => a.localeCompare(b))
+      .map((date) => {
+        const temp = tempByDate.get(date);
+        return {
+          date,
+          rainMm: rainByDate.get(date) ?? 0,
+          temperatureC: temp && temp.count > 0 ? temp.sum / temp.count : 0,
+        };
+      });
+
+    const totalRainMm = daily.reduce((sum, day) => sum + day.rainMm, 0);
+    const avgTemperatureC =
+      temperatureCount > 0 ? temperatureSum / temperatureCount : 0;
     const expectedRain = dayCount * 3;
     const rainAnomaly = clamp(1 - totalRainMm / expectedRain);
     const dryIndex = clamp(rainAnomaly);
@@ -91,15 +127,21 @@ class OpenMeteoWeatherProvider implements WeatherProvider {
       periodStart: input.from,
       periodEnd: input.to,
       rainMm: totalRainMm,
-      sunHours,
+      avgTemperatureC,
       avgWindMps: 5,
       dryIndex,
       drySeason,
       rainAnomaly,
       windStress: 0.4,
-      daily: daily.length > 0 ? daily : undefined,
-      rawPayload: { lat: input.lat, lng: input.lng },
-      note: "Weather data from Open-Meteo.com.",
+      daily:
+        input.daily && dayCount <= 14 && daily.length > 0 ? daily : undefined,
+      rawPayload: {
+        lat: input.lat,
+        lng: input.lng,
+        rainfallEntries,
+        temperatureEntries,
+      },
+      note: "Weather data from FastAPI rainfall/temperature endpoints.",
     };
   }
 }
