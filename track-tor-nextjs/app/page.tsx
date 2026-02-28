@@ -1,26 +1,44 @@
-import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { Sprout } from "lucide-react";
 
-import { FertilizeWizard } from "@/components/fertilize/fertilize-wizard";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getOptionalEnv } from "@/lib/env";
+import { Button } from "@/components/ui/button";
+
+const HERO_VIDEO_URL =
+  "https://videos.pexels.com/video-files/4471213/4471213-uhd_2560_1440_30fps.mp4";
 
 export default function Home() {
-  const mapboxToken = getOptionalEnv("MAP_BOX_ACCESS_TOKEN") ?? "";
-
-  if (!mapboxToken) {
-    return (
-      <main className="mx-auto flex min-h-screen max-w-2xl items-center px-6">
-        <Alert variant="destructive">
-          <AlertCircle className="size-4" />
-          <AlertTitle>Mapbox token is missing</AlertTitle>
-          <AlertDescription>
-            Set <code>MAP_BOX_ACCESS_TOKEN</code> in <code>.env.local</code> to
-            render the map.
-          </AlertDescription>
-        </Alert>
-      </main>
-    );
-  }
-
-  return <FertilizeWizard mapboxToken={mapboxToken} />;
+  return (
+    <main className="relative min-h-screen overflow-hidden">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        className="absolute inset-0 size-full object-cover"
+        aria-hidden
+      >
+        <source src={HERO_VIDEO_URL} type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-black/50" aria-hidden />
+      <section className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center">
+        <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
+          Plan Your Fertilization Timing
+        </h1>
+        <p className="mt-4 max-w-xl text-lg text-white/90 sm:text-xl">
+          Select a UK location, check weather, and know when to fertilize.
+        </p>
+        <Button
+          asChild
+          size="lg"
+          className="mt-8 gap-2 rounded-full bg-emerald-600 px-8 py-6 text-base font-medium text-black shadow-lg hover:bg-emerald-500"
+        >
+          <Link href="/map">
+            <Sprout className="size-5" />
+            Get Started
+          </Link>
+        </Button>
+      </section>
+    </main>
+  );
 }
