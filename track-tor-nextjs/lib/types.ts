@@ -30,7 +30,7 @@ export interface DailyWeather {
 }
 
 export interface WeatherSummary {
-  source: "fallback";
+  source: "open-meteo";
   periodStart: string;
   periodEnd: string;
   rainMm: number;

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { addDays, formatISODate } from "@/lib/date";
 import { supabaseAdmin } from "@/lib/db";
 import { weatherQuerySchema } from "@/lib/schemas";
-import { fallbackWeatherProvider } from "@/lib/weather/fallback";
+import { openMeteoWeatherProvider } from "@/lib/weather";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     );
   }
 
-  const summary = await fallbackWeatherProvider.getSummary({
+  const summary = await openMeteoWeatherProvider.getSummary({
     lat: targetLat,
     lng: targetLng,
     from,

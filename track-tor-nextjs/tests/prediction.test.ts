@@ -69,7 +69,7 @@ const records: MonthlyRecord[] = [
 describe("prediction engine", () => {
   it("returns bounded range and budget periods", () => {
     const weather: WeatherSummary = {
-      source: "fallback",
+      source: "open-meteo",
       periodStart: "2026-01-01",
       periodEnd: "2026-01-31",
       rainMm: 21,
@@ -102,7 +102,7 @@ describe("prediction engine", () => {
         farm,
         records: [records[0]],
         weather: {
-          source: "fallback",
+          source: "open-meteo",
           periodStart: "2026-01-01",
           periodEnd: "2026-01-31",
           rainMm: 50,

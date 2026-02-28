@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { addDays, formatISODate } from "@/lib/date";
 import { buildFertilizeRecommendation } from "@/lib/fertilize";
 import { z } from "zod";
-import { fallbackWeatherProvider } from "@/lib/weather/fallback";
+import { openMeteoWeatherProvider } from "@/lib/weather";
 import { UK_BOUNDING_BOX } from "@/lib/geo";
 
 const fertilizeSchema = z.object({
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     const periodStart = parsed.data.periodStart ?? today;
     const periodEnd = parsed.data.periodEnd ?? addDays(today, 7);
 
-    const weather = await fallbackWeatherProvider.getSummary({
+    const weather = await openMeteoWeatherProvider.getSummary({
       lat,
       lng,
       from: periodStart,
