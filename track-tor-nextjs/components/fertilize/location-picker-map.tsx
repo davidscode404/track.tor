@@ -63,6 +63,11 @@ export function LocationPickerMap({
           } else {
             markerRef.current.setLngLat([lng, lat]);
           }
+          map.flyTo({
+            center: [lng, lat],
+            zoom: 12,
+            duration: 1200,
+          });
           onLocationSelectRef.current(lat, lng);
         }
       },
