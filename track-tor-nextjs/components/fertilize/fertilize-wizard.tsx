@@ -2,15 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
-import {
-  CloudRain,
-  Loader2,
-  MapPin,
-  PanelRightOpen,
-  RotateCcw,
-  Sprout,
-  X,
-} from "lucide-react";
+import { CloudRain, Loader2, MapPin, RotateCcw, Sprout, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -20,7 +12,6 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { WeatherPanel } from "./weather-summary";
 import { PlannerPanel } from "./planner-results";
@@ -234,15 +225,6 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
         >
-          <DrawerTrigger asChild>
-            <button
-              type="button"
-              className="pointer-events-auto flex size-9 items-center justify-center rounded-lg bg-black/90 text-white/80 transition-colors hover:bg-black/80 hover:text-white"
-              aria-label="Open panel"
-            >
-              <PanelRightOpen className="size-4" />
-            </button>
-          </DrawerTrigger>
           <DrawerContent className="border-white/15 bg-zinc-900 text-white">
             <DrawerHeader className="flex flex-row items-center justify-between border-b border-white/10 px-5 py-4">
               <DrawerTitle className="font-sans text-base font-semibold uppercase tracking-widest text-white">
