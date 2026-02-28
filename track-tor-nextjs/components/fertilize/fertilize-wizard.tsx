@@ -38,7 +38,10 @@ type FertilizeApiResponse = ApiErrorPayload & {
   plan?: PlannerResult;
 };
 
-function getApiErrorMessage(payload: ApiErrorPayload, fallback: string): string {
+function getApiErrorMessage(
+  payload: ApiErrorPayload,
+  fallback: string,
+): string {
   if (typeof payload.error === "string" && payload.error.trim().length > 0) {
     return payload.error;
   }
@@ -56,7 +59,7 @@ async function parseResponseJson<T>(response: Response): Promise<T> {
     return JSON.parse(text) as T;
   } catch {
     throw new Error(
-      `Server returned invalid JSON (status ${response.status}). Check API logs.`
+      `Server returned invalid JSON (status ${response.status}). Check API logs.`,
     );
   }
 }
@@ -104,7 +107,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
           .slice(0, 10);
         const res = await fetch(
           `/api/weather?lat=${lat}&lng=${lng}&from=${today}&to=${endDate}&daily=true`,
-          { cache: "no-store" }
+          { cache: "no-store" },
         );
         const data = await parseResponseJson<WeatherApiResponse>(res);
         if (!res.ok) {
@@ -122,7 +125,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         setLoading(false);
       }
     },
-    [lat, lng]
+    [lat, lng],
   );
 
   const handleCheckWeather = useCallback(() => {
@@ -194,7 +197,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       )}
 
       <div className="pointer-events-none fixed left-4 top-4 z-30">
-        <div className="pointer-events-auto inline-flex items-center gap-2 rounded-lg bg-black/50 px-3 py-2 backdrop-blur-md">
+        <div className="pointer-events-auto inline-flex items-center gap-2 rounded-lg bg-black/90 px-3 py-2 backdrop-blur-md">
           <Sprout className="size-4 text-emerald-400" />
           <span className="text-xs font-semibold tracking-[0.15em] text-white/90 uppercase">
             Fertilize
@@ -221,14 +224,14 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         {step === 1 && (
           <div className="pointer-events-auto animate-slide-up">
             {lat == null || lng == null ? (
-              <div className="flex items-center gap-2 rounded-full bg-black/60 px-5 py-3 shadow-xl backdrop-blur-md">
+              <div className="flex items-center gap-2 rounded-full bg-black/90 border border-white/20 px-5 py-3 shadow-xl backdrop-blur-md">
                 <MapPin className="size-4 text-emerald-400" />
                 <span className="text-sm text-white/90">
                   Click anywhere on the map to select a location
                 </span>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-3 rounded-2xl bg-black/60 px-5 py-4 shadow-xl backdrop-blur-md sm:flex-row">
+              <div className="flex flex-col items-center gap-3 rounded-2xl bg-black/90 border border-white/20 px-5 py-4 shadow-xl backdrop-blur-md sm:flex-row">
                 <div className="flex items-center gap-2">
                   <MapPin className="size-4 text-emerald-400" />
                   <span className="text-sm font-medium text-white">
@@ -260,7 +263,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       {step === 2 && weather && (
         <div className="fixed inset-x-0 bottom-0 z-20 animate-slide-up">
           <div className="mx-auto max-w-2xl">
-            <div className="rounded-t-2xl border border-b-0 border-white/15 bg-black/70 shadow-2xl backdrop-blur-xl">
+            <div className="rounded-t-2xl border border-b-0 border-white/15 bg-black shadow-2xl backdrop-blur-xl">
               <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-4">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold tracking-widest text-white/50 uppercase">
@@ -363,7 +366,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       {step === 3 && plan && (
         <div className="fixed inset-x-0 bottom-0 z-20 animate-slide-up">
           <div className="mx-auto max-w-2xl">
-            <div className="rounded-t-2xl border border-b-0 border-white/15 bg-black/70 shadow-2xl backdrop-blur-xl">
+            <div className="rounded-t-2xl border border-b-0 border-white/15 bg-black shadow-2xl backdrop-blur-xl">
               <div className="flex items-center justify-between px-5 pt-4">
                 <span className="text-xs font-semibold tracking-widest text-white/50 uppercase">
                   Plan

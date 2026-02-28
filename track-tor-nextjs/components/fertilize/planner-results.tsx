@@ -89,7 +89,9 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
   const maxDeficit = Math.max(...plan.days.map((d) => d.deficit), 1);
 
   const hasBest = plan.bestFertDay != null;
-  const summaryBg = hasBest ? "bg-emerald-500/15 border-emerald-500/30" : "bg-red-500/15 border-red-500/30";
+  const summaryBg = hasBest
+    ? "bg-emerald-500/15 border-emerald-500/30"
+    : "bg-red-500/15 border-red-500/30";
   const summaryText = hasBest ? "text-emerald-300" : "text-red-300";
   const SummaryIcon = hasBest ? CheckCircle2 : AlertTriangle;
 
@@ -111,7 +113,7 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
       </div>
 
       {/* Timeline strip */}
-      <div className="mt-5">
+      <div className="mt-5  overflow-y-scroll">
         <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-white/55">
           Daily timeline
         </p>
@@ -125,9 +127,7 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
             return (
               <button
                 key={day.date}
-                onClick={() =>
-                  setExpandedDay(isExpanded ? null : day.date)
-                }
+                onClick={() => setExpandedDay(isExpanded ? null : day.date)}
                 className={`relative flex min-w-18 shrink-0 flex-col items-center rounded-xl border px-2.5 pt-2.5 pb-3 transition-all ${
                   isExpanded
                     ? "border-white/25 bg-white/10"
@@ -146,9 +146,7 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
                 {/* Status dot + irrigation icon */}
                 <div className="mt-2 flex items-center gap-1">
                   <div className={`size-2.5 rounded-full ${cfg.dot}`} />
-                  {day.irrigate && (
-                    <Droplets className="size-3 text-sky-400" />
-                  )}
+                  {day.irrigate && <Droplets className="size-3 text-sky-400" />}
                 </div>
 
                 {/* Rain & deficit bars */}
@@ -216,7 +214,9 @@ function DayDetail({ day, isBest }: { day: DayPlan; isBest: boolean }) {
     <div className="mt-3 animate-slide-up rounded-xl border border-white/15 bg-white/8 p-4">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-white/90">{label}</span>
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${cfg.bg} ${cfg.text}`}>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${cfg.bg} ${cfg.text}`}
+        >
           {cfg.label}
           {isBest ? " — Best" : ""}
         </span>
@@ -227,17 +227,57 @@ function DayDetail({ day, isBest }: { day: DayPlan; isBest: boolean }) {
       </p>
 
       <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-4">
-        <Stat icon={CloudRain} iconColor="text-sky-400" label="Rain" value={`${day.rainMm.toFixed(1)}mm`} />
-        <Stat icon={Thermometer} iconColor="text-amber-400" label="Temp" value={`${day.temperatureC.toFixed(1)}°C`} />
-        <Stat icon={Droplets} iconColor="text-cyan-400" label="ETo" value={`${day.eto.toFixed(1)}mm`} />
-        <Stat icon={Sprout} iconColor="text-emerald-400" label="ETc" value={`${day.etc.toFixed(1)}mm`} />
-        <Stat icon={CloudRain} iconColor="text-teal-400" label="Eff. rain" value={`${day.effectiveRain.toFixed(1)}mm`} />
-        <Stat icon={Droplets} iconColor="text-amber-400" label="Deficit" value={`${day.deficit.toFixed(1)}mm`} />
+        <Stat
+          icon={CloudRain}
+          iconColor="text-sky-400"
+          label="Rain"
+          value={`${day.rainMm.toFixed(1)}mm`}
+        />
+        <Stat
+          icon={Thermometer}
+          iconColor="text-amber-400"
+          label="Temp"
+          value={`${day.temperatureC.toFixed(1)}°C`}
+        />
+        <Stat
+          icon={Droplets}
+          iconColor="text-cyan-400"
+          label="ETo"
+          value={`${day.eto.toFixed(1)}mm`}
+        />
+        <Stat
+          icon={Sprout}
+          iconColor="text-emerald-400"
+          label="ETc"
+          value={`${day.etc.toFixed(1)}mm`}
+        />
+        <Stat
+          icon={CloudRain}
+          iconColor="text-teal-400"
+          label="Eff. rain"
+          value={`${day.effectiveRain.toFixed(1)}mm`}
+        />
+        <Stat
+          icon={Droplets}
+          iconColor="text-amber-400"
+          label="Deficit"
+          value={`${day.deficit.toFixed(1)}mm`}
+        />
         {day.irrigate && (
-          <Stat icon={Droplets} iconColor="text-sky-400" label="Irrigate" value={`${day.irrigationMm.toFixed(0)}mm`} />
+          <Stat
+            icon={Droplets}
+            iconColor="text-sky-400"
+            label="Irrigate"
+            value={`${day.irrigationMm.toFixed(0)}mm`}
+          />
         )}
         {day.fertIrrigationMm > 0 && (
-          <Stat icon={Droplets} iconColor="text-amber-400" label="Fert irrig." value={`${day.fertIrrigationMm.toFixed(0)}mm`} />
+          <Stat
+            icon={Droplets}
+            iconColor="text-amber-400"
+            label="Fert irrig."
+            value={`${day.fertIrrigationMm.toFixed(0)}mm`}
+          />
         )}
       </div>
     </div>
@@ -300,8 +340,15 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
   return (
     <div className="rounded-lg border border-white/15 bg-white/8 p-3">
       <ChartContainer config={deficitChartConfig} className="h-[180px] w-full">
-        <BarChart data={chartData} margin={{ left: 12, right: 12, top: 8, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.18)" vertical={false} />
+        <BarChart
+          data={chartData}
+          margin={{ left: 12, right: 12, top: 8, bottom: 0 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="rgba(255,255,255,0.18)"
+            vertical={false}
+          />
           <XAxis
             dataKey="label"
             tickLine={false}
@@ -326,7 +373,9 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
                 formatter={(value) => [`${value} mm`, "Deficit"]}
                 labelFormatter={(_, payload) =>
                   payload?.[0]?.payload?.date
-                    ? new Date(payload[0].payload.date + "T12:00:00Z").toLocaleDateString("en-GB", {
+                    ? new Date(
+                        payload[0].payload.date + "T12:00:00Z",
+                      ).toLocaleDateString("en-GB", {
                         weekday: "long",
                         day: "numeric",
                         month: "short",
@@ -357,7 +406,8 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
         </BarChart>
       </ChartContainer>
       <p className="mt-2 text-[10px] text-white/50">
-        Dashed line: irrigation threshold ({dmax}mm). Bars show daily water deficit.
+        Dashed line: irrigation threshold ({dmax}mm). Bars show daily water
+        deficit.
       </p>
     </div>
   );
@@ -374,7 +424,9 @@ function IrrigationSummary({ days }: { days: DayPlan[] }) {
       <div className="flex items-center gap-2">
         <Droplets className="size-4 text-sky-400" />
         <span className="text-xs font-medium text-sky-200">
-          {irrigationDays.length} irrigation event{irrigationDays.length > 1 ? "s" : ""} &middot; {totalMm.toFixed(0)}mm total
+          {irrigationDays.length} irrigation event
+          {irrigationDays.length > 1 ? "s" : ""} &middot; {totalMm.toFixed(0)}mm
+          total
         </span>
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -385,7 +437,8 @@ function IrrigationSummary({ days }: { days: DayPlan[] }) {
               key={d.date}
               className="rounded-full border border-sky-400/30 bg-sky-500/20 px-2 py-0.5 text-[10px] text-sky-200"
             >
-              {dayFormatter.format(dt)} {dateFormatter.format(dt)} — {d.irrigationMm.toFixed(0)}mm
+              {dayFormatter.format(dt)} {dateFormatter.format(dt)} —{" "}
+              {d.irrigationMm.toFixed(0)}mm
             </span>
           );
         })}
