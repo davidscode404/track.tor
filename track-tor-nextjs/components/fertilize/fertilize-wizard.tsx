@@ -19,7 +19,7 @@ const DynamicLocationPickerMap = dynamic(
         <Loader2 className="size-8 animate-spin text-white/60" />
       </div>
     ),
-  }
+  },
 );
 
 interface FertilizeWizardProps {
@@ -31,18 +31,22 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [weather, setWeather] = useState<WeatherSummary | null>(null);
-  const [recommendation, setRecommendation] = useState<FertilizeRecommendation | null>(null);
+  const [recommendation, setRecommendation] =
+    useState<FertilizeRecommendation | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLocationSelect = useCallback((newLat: number, newLng: number) => {
-    setLat(newLat);
-    setLng(newLng);
-    setWeather(null);
-    setRecommendation(null);
-    setError(null);
-    if (step !== 1) setStep(1);
-  }, [step]);
+  const handleLocationSelect = useCallback(
+    (newLat: number, newLng: number) => {
+      setLat(newLat);
+      setLng(newLng);
+      setWeather(null);
+      setRecommendation(null);
+      setError(null);
+      if (step !== 1) setStep(1);
+    },
+    [step],
+  );
 
   const handleCheckWeather = useCallback(async () => {
     if (lat == null || lng == null) return;
@@ -50,13 +54,16 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
     setError(null);
     try {
       const today = new Date().toISOString().slice(0, 10);
-      const nextWeek = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
+      const nextWeek = new Date(Date.now() + 7 * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
       const res = await fetch(
         `/api/weather?lat=${lat}&lng=${lng}&from=${today}&to=${nextWeek}&daily=true`,
-        { cache: "no-store" }
+        { cache: "no-store" },
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message ?? "Weather fetch failed");
+      if (!res.ok)
+        throw new Error(data.error?.message ?? "Weather fetch failed");
       setWeather(data.weather);
       setStep(2);
     } catch (e) {
@@ -77,7 +84,8 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         body: JSON.stringify({ lat, lng }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message ?? "Recommendation failed");
+      if (!res.ok)
+        throw new Error(data.error?.message ?? "Recommendation failed");
       setRecommendation(data.recommendation);
       if (data.weather) setWeather(data.weather);
       setStep(3);
@@ -154,8 +162,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                 <div className="flex items-center gap-2">
                   <MapPin className="size-4 text-emerald-400" />
                   <span className="text-sm font-medium text-white">
-                    {lat.toFixed(4)}°N, {lng.toFixed(4)}°
-                    {lng >= 0 ? "E" : "W"}
+                    {lat.toFixed(4)}°N, {lng.toFixed(4)}°{lng >= 0 ? "E" : "W"}
                   </span>
                 </div>
                 <Button

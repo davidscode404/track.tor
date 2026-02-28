@@ -38,26 +38,32 @@ export function LocationPickerMap({
       ],
     });
 
-    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
+    map.addControl(
+      new mapboxgl.NavigationControl({ visualizePitch: true }),
+      "top-right",
+    );
 
-    map.on("click", (e: mapboxgl.MapMouseEvent & { lngLat: mapboxgl.LngLat }) => {
-      const { lng, lat } = e.lngLat;
-      if (
-        lat >= UK_BOUNDING_BOX.minLat &&
-        lat <= UK_BOUNDING_BOX.maxLat &&
-        lng >= UK_BOUNDING_BOX.minLng &&
-        lng <= UK_BOUNDING_BOX.maxLng
-      ) {
-        if (!markerRef.current) {
-          markerRef.current = new mapboxgl.Marker({ color: "#1f7a53" })
-            .setLngLat([lng, lat])
-            .addTo(map);
-        } else {
-          markerRef.current.setLngLat([lng, lat]);
+    map.on(
+      "click",
+      (e: mapboxgl.MapMouseEvent & { lngLat: mapboxgl.LngLat }) => {
+        const { lng, lat } = e.lngLat;
+        if (
+          lat >= UK_BOUNDING_BOX.minLat &&
+          lat <= UK_BOUNDING_BOX.maxLat &&
+          lng >= UK_BOUNDING_BOX.minLng &&
+          lng <= UK_BOUNDING_BOX.maxLng
+        ) {
+          if (!markerRef.current) {
+            markerRef.current = new mapboxgl.Marker({ color: "#1f7a53" })
+              .setLngLat([lng, lat])
+              .addTo(map);
+          } else {
+            markerRef.current.setLngLat([lng, lat]);
+          }
+          onLocationSelectRef.current(lat, lng);
         }
-        onLocationSelectRef.current(lat, lng);
-      }
-    });
+      },
+    );
 
     map.on("load", () => map.resize());
 
