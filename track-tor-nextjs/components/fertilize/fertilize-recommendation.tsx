@@ -102,7 +102,7 @@ export function RecommendationPanel({
       {recommendation.outlook.length > 0 && (
         <div className="mt-5">
           <p className="mb-3 text-xs font-medium uppercase tracking-wider text-white/30">
-            7-day outlook
+            {recommendation.outlook.length}-day outlook
           </p>
           <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-none">
             {recommendation.outlook.map((day) => {

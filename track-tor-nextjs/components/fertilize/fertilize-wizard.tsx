@@ -62,8 +62,11 @@ async function parseResponseJson<T>(response: Response): Promise<T> {
   }
 }
 
+type PeriodDays = 7 | 14;
+
 export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
   const [step, setStep] = useState(1);
+  const [periodDays, setPeriodDays] = useState<PeriodDays>(7);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [weather, setWeather] = useState<WeatherSummary | null>(null);
@@ -84,44 +87,61 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
     [step],
   );
 
-  const handleCheckWeather = useCallback(async () => {
-    if (lat == null || lng == null) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const today = new Date().toISOString().slice(0, 10);
-      const nextWeek = new Date(Date.now() + 7 * 86_400_000)
-        .toISOString()
-        .slice(0, 10);
-      const res = await fetch(
-        `/api/weather?lat=${lat}&lng=${lng}&from=${today}&to=${nextWeek}&daily=true`,
-        { cache: "no-store" },
-      );
-      const data = await parseResponseJson<WeatherApiResponse>(res);
-      if (!res.ok) {
-        throw new Error(getApiErrorMessage(data, "Weather fetch failed"));
+  const fetchWeather = useCallback(
+    async (days: PeriodDays) => {
+      if (lat == null || lng == null) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const endDate = new Date(Date.now() + days * 86_400_000)
+          .toISOString()
+          .slice(0, 10);
+        const res = await fetch(
+          `/api/weather?lat=${lat}&lng=${lng}&from=${today}&to=${endDate}&daily=true`,
+          { cache: "no-store" }
+        );
+        const data = await parseResponseJson<WeatherApiResponse>(res);
+        if (!res.ok) {
+          throw new Error(getApiErrorMessage(data, "Weather fetch failed"));
+        }
+        if (!data.weather) {
+          throw new Error("Weather response is missing weather data.");
+        }
+        setWeather(data.weather);
+        setPeriodDays(days);
+        setStep(2);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Failed to load weather");
+      } finally {
+        setLoading(false);
       }
-      if (!data.weather) {
-        throw new Error("Weather response is missing weather data.");
-      }
-      setWeather(data.weather);
-      setStep(2);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load weather");
-    } finally {
-      setLoading(false);
-    }
-  }, [lat, lng]);
+    },
+    [lat, lng]
+  );
+
+  const handleCheckWeather = useCallback(() => {
+    fetchWeather(periodDays);
+  }, [fetchWeather, periodDays]);
 
   const handleGetRecommendation = useCallback(async () => {
     if (lat == null || lng == null) return;
     setLoading(true);
     setError(null);
     try {
+      const today = new Date().toISOString().slice(0, 10);
+      const endDate = new Date(Date.now() + periodDays * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
       const res = await fetch("/api/fertilize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lat, lng }),
+        body: JSON.stringify({
+          lat,
+          lng,
+          periodStart: today,
+          periodEnd: endDate,
+        }),
       });
       const data = await parseResponseJson<FertilizeApiResponse>(res);
       if (!res.ok) {
@@ -138,7 +158,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
     } finally {
       setLoading(false);
     }
-  }, [lat, lng]);
+  }, [lat, lng, periodDays]);
 
   const handleStartOver = useCallback(() => {
     setStep(1);
@@ -235,7 +255,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         <div className="fixed inset-x-0 bottom-0 z-20 animate-slide-up">
           <div className="mx-auto max-w-2xl">
             <div className="rounded-t-2xl border border-b-0 border-white/15 bg-black/70 shadow-2xl backdrop-blur-xl">
-              <div className="flex items-center justify-between px-5 pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-4">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold tracking-widest text-white/50 uppercase">
                     Weather
@@ -245,14 +265,42 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                     {(lng ?? 0) >= 0 ? "E" : "W"}
                   </span>
                 </div>
-                <button
-                  onClick={handleDismissPanel}
-                  className="rounded-full p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white/80"
-                >
-                  <X className="size-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex rounded-full border border-white/20 bg-white/5">
+                    <button
+                      type="button"
+                      onClick={() => fetchWeather(7)}
+                      disabled={loading}
+                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                        periodDays === 7
+                          ? "bg-emerald-500/30 text-emerald-300"
+                          : "text-white/60 hover:text-white/80 disabled:opacity-50"
+                      }`}
+                    >
+                      1 week
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fetchWeather(14)}
+                      disabled={loading}
+                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                        periodDays === 14
+                          ? "bg-emerald-500/30 text-emerald-300"
+                          : "text-white/60 hover:text-white/80 disabled:opacity-50"
+                      }`}
+                    >
+                      2 weeks
+                    </button>
+                  </div>
+                  <button
+                    onClick={handleDismissPanel}
+                    className="rounded-full p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white/80"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
               </div>
-              <WeatherPanel weather={weather} />
+              <WeatherPanel weather={weather} periodDays={periodDays} />
               <div className="flex items-center justify-between border-t border-white/10 px-5 py-4">
                 <button
                   onClick={handleDismissPanel}
