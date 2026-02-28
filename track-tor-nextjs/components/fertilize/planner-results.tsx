@@ -339,7 +339,10 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
 
   return (
     <div className="rounded-lg border border-white/15 bg-white/8 p-3">
-      <ChartContainer config={deficitChartConfig} className="h-[180px] w-full">
+      <ChartContainer
+        config={deficitChartConfig}
+        className="h-[180px] w-full [&_.recharts-cartesian-axis-tick_text]:fill-zinc-300"
+      >
         <BarChart
           data={chartData}
           margin={{ left: 12, right: 12, top: 8, bottom: 0 }}
@@ -370,6 +373,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
             cursor={false}
             content={
               <ChartTooltipContent
+                className="border-zinc-600 bg-zinc-800 text-white [&_*]:text-zinc-100 [&_.font-medium]:text-white"
                 formatter={(value) => [`${value} mm`, "Deficit"]}
                 labelFormatter={(_, payload) =>
                   payload?.[0]?.payload?.date
