@@ -22,7 +22,7 @@ export default function Home() {
       </video>
       <div className="absolute inset-0 bg-black/50" aria-hidden />
       <section className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
+        <h1 className="text-shadow-md text-shadow-zinc-900 text-4xl font-semibold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
           Plan Your Fertilization Timing
         </h1>
         <p className="mt-4 max-w-xl text-lg text-white/90 sm:text-xl">
@@ -31,7 +31,7 @@ export default function Home() {
         <Button
           asChild
           size="lg"
-          className="mt-8 gap-2 rounded-full bg-emerald-600 px-8 py-6 text-base font-medium text-black shadow-lg hover:bg-emerald-500"
+          className="mt-8 gap-2 rounded-full bg-emerald-600 px-8 py-6 text-base font-medium text-black  shadow-lg hover:bg-emerald-500"
         >
           <Link href="/map">
             <Sprout className="size-5" />

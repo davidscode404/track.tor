@@ -200,7 +200,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         <div className="pointer-events-auto inline-flex items-center gap-2 rounded-lg bg-black/90 border border-white/10 px-3 py-2 backdrop-blur-md">
           <Sprout className="size-4 text-emerald-400" />
           <span className="text-xs font-semibold tracking-[0.15em] text-white/90 uppercase">
-            Fertilize
+            Track-Tor
           </span>
         </div>
       </div>
@@ -317,7 +317,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                       size="sm"
                       onClick={handleGetPlan}
                       disabled={loading}
-                      className="w-full gap-1.5 rounded-full bg-emerald-500 text-white hover:bg-emerald-400"
+                      className="w-full gap-1.5 rounded-full bg-emerald-500 text-black hover:bg-emerald-400"
                     >
                       {loading ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -374,7 +374,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                   size="sm"
                   onClick={handleCheckWeather}
                   disabled={loading}
-                  className="gap-1.5 rounded-full bg-emerald-500 text-white hover:bg-emerald-400"
+                  className="gap-1.5 rounded-full bg-emerald-500 text-black hover:bg-emerald-400"
                 >
                   {loading ? (
                     <Loader2 className="size-3.5 animate-spin" />

@@ -113,7 +113,7 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
       </div>
 
       {/* Timeline strip */}
-      <div className="mt-5  overflow-y-scroll">
+      <div className="mt-5 ">
         <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-white/55">
           Daily timeline
         </p>
@@ -339,10 +339,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
 
   return (
     <div className="rounded-lg border border-white/15 bg-white/8 p-3">
-      <ChartContainer
-        config={deficitChartConfig}
-        className="h-[180px] w-full [&_.recharts-cartesian-axis-tick_text]:fill-zinc-300"
-      >
+      <ChartContainer config={deficitChartConfig} className="h-[180px] w-full">
         <BarChart
           data={chartData}
           margin={{ left: 12, right: 12, top: 8, bottom: 0 }}
@@ -357,7 +354,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 11 }}
+            tick={{ fill: "#ffffff", fontSize: 11 }}
             minTickGap={24}
           />
           <YAxis
@@ -365,7 +362,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 11 }}
+            tick={{ fill: "#ffffff", fontSize: 11 }}
             tickFormatter={(v) => `${v}mm`}
             domain={[0, "auto"]}
           />
@@ -373,7 +370,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
             cursor={false}
             content={
               <ChartTooltipContent
-                className="border-zinc-600 bg-zinc-800 text-white [&_*]:text-zinc-100 [&_.font-medium]:text-white"
+                className="border-zinc-600 bg-zinc-800 text-zinc-100 [&_.text-muted-foreground]:text-zinc-400 [&_.text-foreground]:text-white"
                 formatter={(value) => [`${value} mm`, "Deficit"]}
                 labelFormatter={(_, payload) =>
                   payload?.[0]?.payload?.date

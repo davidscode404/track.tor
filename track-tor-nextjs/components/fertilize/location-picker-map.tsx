@@ -57,17 +57,12 @@ export function LocationPickerMap({
           lng <= UK_BOUNDING_BOX.maxLng
         ) {
           if (!markerRef.current) {
-            markerRef.current = new mapboxgl.Marker({ color: "#1f7a53" })
+            markerRef.current = new mapboxgl.Marker({ color: "#2563eb" })
               .setLngLat([lng, lat])
               .addTo(map);
           } else {
             markerRef.current.setLngLat([lng, lat]);
           }
-          map.flyTo({
-            center: [lng, lat],
-            zoom: 12,
-            duration: 1200,
-          });
           onLocationSelectRef.current(lat, lng);
         }
       },
