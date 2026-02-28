@@ -205,7 +205,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       />
 
       <div className="pointer-events-none fixed left-4 top-4 z-30">
-        <div className="pointer-events-auto inline-flex items-center gap-2 rounded-lg bg-black/90 px-3 py-2 backdrop-blur-md">
+        <div className="pointer-events-auto inline-flex items-center gap-2 rounded-lg bg-black/90 border border-white/10 px-3 py-2 backdrop-blur-md">
           <Sprout className="size-4 text-emerald-400" />
           <span className="text-xs font-semibold tracking-[0.15em] text-white/90 uppercase">
             Fertilize
@@ -368,14 +368,14 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center p-4">
           <div className="pointer-events-auto animate-slide-up">
             {lat == null || lng == null ? (
-              <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/90 px-5 py-3 shadow-xl backdrop-blur-md">
+              <div className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-5 py-3 shadow-xl backdrop-blur-md">
                 <MapPin className="size-4 text-emerald-400" />
                 <span className="text-sm text-white/90">
                   Click anywhere on the map to select a location
                 </span>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/20 bg-black/90 px-5 py-4 shadow-xl backdrop-blur-md sm:flex-row">
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-zinc-900 px-5 py-4 shadow-xl backdrop-blur-md sm:flex-row">
                 <div className="flex items-center gap-2">
                   <MapPin className="size-4 text-emerald-400" />
                   <span className="text-sm font-medium text-white">
