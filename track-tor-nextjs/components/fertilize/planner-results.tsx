@@ -103,7 +103,7 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
             <p className={`text-sm font-semibold leading-snug ${summaryText}`}>
               {plan.summary}
             </p>
-            <p className="mt-1 text-xs text-white/40">
+            <p className="mt-1 text-xs text-white/60">
               {CROP_LABELS[plan.crop]} &middot; {plan.days.length}-day plan
             </p>
           </div>
@@ -112,10 +112,10 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
 
       {/* Timeline strip */}
       <div className="mt-5">
-        <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-white/30">
+        <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-white/55">
           Daily timeline
         </p>
-        <div className="-mx-5 flex gap-2 overflow-x-auto overflow-y-visible px-5 pb-3 scrollbar-none">
+        <div className="-mx-5 flex mt-4 gap-2 overflow-x-auto overflow-y-visible px-5 pb-3 scrollbar-none">
           {plan.days.map((day) => {
             const d = new Date(day.date + "T12:00:00Z");
             const cfg = STATUS_CONFIG[day.fertStatus];
@@ -136,10 +136,10 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
                       : `border-white/5 ${cfg.bg} hover:border-white/15`
                 }`}
               >
-                <span className="text-[10px] font-semibold uppercase text-white/50">
+                <span className="text-[10px] font-semibold uppercase text-white/70">
                   {dayFormatter.format(d)}
                 </span>
-                <span className="text-[9px] text-white/30">
+                <span className="text-[9px] text-white/50">
                   {dateFormatter.format(d)}
                 </span>
 
@@ -154,14 +154,14 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
                 {/* Rain & deficit bars */}
                 <div className="mt-2 flex w-full flex-col gap-1">
                   <div className="flex items-center gap-1">
-                    <CloudRain className="size-2.5 text-sky-400/60" />
-                    <span className="text-[9px] tabular-nums text-white/40">
+                    <CloudRain className="size-2.5 text-sky-400" />
+                    <span className="text-[9px] tabular-nums text-white/60">
                       {day.rainMm.toFixed(0)}mm
                     </span>
                   </div>
-                  <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-white/15">
                     <div
-                      className="h-full rounded-full bg-amber-500/60 transition-all"
+                      className="h-full rounded-full bg-amber-400/70 transition-all"
                       style={{
                         width: `${Math.min(100, (day.deficit / maxDeficit) * 100)}%`,
                       }}
@@ -170,7 +170,7 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
                 </div>
 
                 {isBest && (
-                  <div className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-emerald-500">
+                  <div className="absolute  -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full bg-emerald-500">
                     <Sprout className="size-2.5 text-white" />
                   </div>
                 )}
@@ -190,7 +190,7 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
 
       {/* Water deficit chart */}
       <div className="mt-5">
-        <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-white/30">
+        <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-white/55">
           Water deficit
         </p>
         <DeficitChart days={plan.days} crop={plan.crop} />
@@ -213,31 +213,31 @@ function DayDetail({ day, isBest }: { day: DayPlan; isBest: boolean }) {
   });
 
   return (
-    <div className="mt-3 animate-slide-up rounded-xl border border-white/10 bg-white/5 p-4">
+    <div className="mt-3 animate-slide-up rounded-xl border border-white/15 bg-white/8 p-4">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-white/80">{label}</span>
+        <span className="text-sm font-medium text-white/90">{label}</span>
         <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${cfg.bg} ${cfg.text}`}>
           {cfg.label}
           {isBest ? " — Best" : ""}
         </span>
       </div>
 
-      <p className="mt-2 text-xs leading-relaxed text-white/50">
+      <p className="mt-2 text-xs leading-relaxed text-white/65">
         {day.fertReason}
       </p>
 
       <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-4">
-        <Stat icon={CloudRain} iconColor="text-sky-400/60" label="Rain" value={`${day.rainMm.toFixed(1)}mm`} />
-        <Stat icon={Thermometer} iconColor="text-amber-400/60" label="Temp" value={`${day.temperatureC.toFixed(1)}°C`} />
-        <Stat icon={Droplets} iconColor="text-cyan-400/60" label="ETo" value={`${day.eto.toFixed(1)}mm`} />
-        <Stat icon={Sprout} iconColor="text-emerald-400/60" label="ETc" value={`${day.etc.toFixed(1)}mm`} />
-        <Stat icon={CloudRain} iconColor="text-teal-400/60" label="Eff. rain" value={`${day.effectiveRain.toFixed(1)}mm`} />
-        <Stat icon={Droplets} iconColor="text-amber-400/60" label="Deficit" value={`${day.deficit.toFixed(1)}mm`} />
+        <Stat icon={CloudRain} iconColor="text-sky-400" label="Rain" value={`${day.rainMm.toFixed(1)}mm`} />
+        <Stat icon={Thermometer} iconColor="text-amber-400" label="Temp" value={`${day.temperatureC.toFixed(1)}°C`} />
+        <Stat icon={Droplets} iconColor="text-cyan-400" label="ETo" value={`${day.eto.toFixed(1)}mm`} />
+        <Stat icon={Sprout} iconColor="text-emerald-400" label="ETc" value={`${day.etc.toFixed(1)}mm`} />
+        <Stat icon={CloudRain} iconColor="text-teal-400" label="Eff. rain" value={`${day.effectiveRain.toFixed(1)}mm`} />
+        <Stat icon={Droplets} iconColor="text-amber-400" label="Deficit" value={`${day.deficit.toFixed(1)}mm`} />
         {day.irrigate && (
-          <Stat icon={Droplets} iconColor="text-sky-400/60" label="Irrigate" value={`${day.irrigationMm.toFixed(0)}mm`} />
+          <Stat icon={Droplets} iconColor="text-sky-400" label="Irrigate" value={`${day.irrigationMm.toFixed(0)}mm`} />
         )}
         {day.fertIrrigationMm > 0 && (
-          <Stat icon={Droplets} iconColor="text-amber-400/60" label="Fert irrig." value={`${day.fertIrrigationMm.toFixed(0)}mm`} />
+          <Stat icon={Droplets} iconColor="text-amber-400" label="Fert irrig." value={`${day.fertIrrigationMm.toFixed(0)}mm`} />
         )}
       </div>
     </div>
@@ -258,8 +258,8 @@ function Stat({
   return (
     <div className="flex items-center gap-1.5">
       <Icon className={`size-3 ${iconColor}`} />
-      <span className="text-white/30">{label}</span>
-      <span className="font-mono text-white/70">{value}</span>
+      <span className="text-white/50">{label}</span>
+      <span className="font-mono text-white/85">{value}</span>
     </div>
   );
 }
@@ -276,10 +276,10 @@ const deficitChartConfig = {
 } satisfies ChartConfig;
 
 function getBarColor(day: DayPlan): string {
-  if (day.fertStatus === "good") return "oklch(0.65 0.18 155)";
-  if (day.fertStatus === "rejected") return "oklch(0.6 0.2 25)";
-  if (day.irrigate) return "oklch(0.65 0.12 220)";
-  return "oklch(0.72 0.15 85)";
+  if (day.fertStatus === "good") return "oklch(0.72 0.2 155)";
+  if (day.fertStatus === "rejected") return "oklch(0.65 0.22 25)";
+  if (day.irrigate) return "oklch(0.72 0.15 220)";
+  return "oklch(0.78 0.18 85)";
 }
 
 function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
@@ -298,16 +298,16 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
   const dmax = CROP_DMAX[crop];
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+    <div className="rounded-lg border border-white/15 bg-white/8 p-3">
       <ChartContainer config={deficitChartConfig} className="h-[180px] w-full">
         <BarChart data={chartData} margin={{ left: 12, right: 12, top: 8, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.18)" vertical={false} />
           <XAxis
             dataKey="label"
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
+            tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 11 }}
             minTickGap={24}
           />
           <YAxis
@@ -315,7 +315,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
             tickLine={false}
             axisLine={false}
             tickMargin={8}
-            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
+            tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 11 }}
             tickFormatter={(v) => `${v}mm`}
             domain={[0, "auto"]}
           />
@@ -339,9 +339,9 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
           />
           <ReferenceLine
             y={dmax}
-            stroke="rgba(100,150,255,0.5)"
+            stroke="rgba(120,180,255,0.7)"
             strokeDasharray="4 4"
-            strokeWidth={1}
+            strokeWidth={1.5}
           />
           <Bar dataKey="deficit" radius={[4, 4, 0, 0]} maxBarSize={32}>
             {chartData.map((entry, i) => {
@@ -356,7 +356,7 @@ function DeficitChart({ days, crop }: { days: DayPlan[]; crop: CropType }) {
           </Bar>
         </BarChart>
       </ChartContainer>
-      <p className="mt-2 text-[10px] text-white/30">
+      <p className="mt-2 text-[10px] text-white/50">
         Dashed line: irrigation threshold ({dmax}mm). Bars show daily water deficit.
       </p>
     </div>
@@ -370,10 +370,10 @@ function IrrigationSummary({ days }: { days: DayPlan[] }) {
   const totalMm = irrigationDays.reduce((s, d) => s + d.irrigationMm, 0);
 
   return (
-    <div className="mt-4 rounded-lg border border-sky-500/20 bg-sky-500/10 p-3">
+    <div className="mt-4 rounded-lg border border-sky-400/25 bg-sky-500/15 p-3">
       <div className="flex items-center gap-2">
         <Droplets className="size-4 text-sky-400" />
-        <span className="text-xs font-medium text-sky-300">
+        <span className="text-xs font-medium text-sky-200">
           {irrigationDays.length} irrigation event{irrigationDays.length > 1 ? "s" : ""} &middot; {totalMm.toFixed(0)}mm total
         </span>
       </div>
@@ -383,7 +383,7 @@ function IrrigationSummary({ days }: { days: DayPlan[] }) {
           return (
             <span
               key={d.date}
-              className="rounded-full border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[10px] text-sky-300"
+              className="rounded-full border border-sky-400/30 bg-sky-500/20 px-2 py-0.5 text-[10px] text-sky-200"
             >
               {dayFormatter.format(dt)} {dateFormatter.format(dt)} — {d.irrigationMm.toFixed(0)}mm
             </span>
