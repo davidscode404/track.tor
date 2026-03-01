@@ -1,18 +1,27 @@
 import io
 import json
+import os
 import urllib.request
 
 import torch
 import torch.nn as nn
+from datetime import datetime
+
+import fal_client
+from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from pydantic import BaseModel
 from torchvision import models, transforms
 
+load_dotenv()
+
+FAL_KEY = os.getenv("FAL_KEY")
+
 app = FastAPI(
     title="Track-Tor API",
-    description="Weather forecasts, rainfall, temperature, and crop image inference",
+    description="Weather forecasts, rainfall, temperature, and crop image inference, with LLM fertiliser analysis",
     version="1.0.0",
 )
 
@@ -70,6 +79,11 @@ class TemperatureEntry(BaseModel):
     feels_like_c: float
 
 
+class AnalysisResponse(BaseModel):
+    generated_at: str
+    recommendation: str
+
+
 # ── helpers ────────────────────────────────────────────────────────────────────
 def _fetch(url: str) -> dict:
     try:
@@ -85,7 +99,43 @@ def _save(filename: str, records: list[BaseModel]) -> None:
             f.write(record.model_dump_json() + "\n")
 
 
-# ── endpoints ──────────────────────────────────────────────────────────────────
+def _read(filepath: str) -> str:
+    with open(filepath, "r", encoding="utf-8") as f:
+        return f.read().strip()
+
+
+def _analyse_with_llm(temperature_data: str, rainfall_data: str) -> str:
+    now = datetime.now()
+    prompt = f"""Based on this temperature and rainfall data alone, what fertiliser usage would you recommend for a potato field?
+
+Date: {now.strftime("%A, %B %d, %Y")} at {now.strftime("%H:%M:%S")}
+
+Temperature Data:
+{temperature_data}
+
+Rainfall Data:
+{rainfall_data}
+"""
+
+    def on_queue_update(update):
+        if isinstance(update, fal_client.InProgress):
+            for log in update.logs:
+                print(log["message"])
+
+    result = fal_client.subscribe(
+        "openrouter/router",
+        arguments={
+            "prompt": prompt,
+            "model": "nvidia/nemotron-nano-9b-v2:free",
+        },
+        with_logs=True,
+        on_queue_update=on_queue_update,
+    )
+
+    return result.get("output", "")
+
+
+# ── individual endpoints ───────────────────────────────────────────────────────
 @app.get("/rainfall", response_model=list[RainfallEntry], summary="16-day rainfall forecast")
 def get_rainfall(
     latitude: float = Query(..., description="Latitude"),
@@ -134,7 +184,7 @@ def get_temperature(
 ):
     """
     Returns hourly 2 m temperature and apparent (feels-like) temperature.
-    Results are also saved to sunlight_data.txt.
+    Results are also saved to temperature_data.txt.
     """
     url = (
         "https://api.open-meteo.com/v1/forecast"
@@ -191,3 +241,35 @@ async def predict(crop: str = Form(...), file: UploadFile = File(...)):
         "confidence": float(probs[idx]),
         "classes": classes,
     }
+
+
+
+# ── combined analysis endpoint ─────────────────────────────────────────────────
+@app.get("/analyse", response_model=AnalysisResponse, summary="Fetch weather data and get LLM fertiliser recommendation")
+def analyse(
+    latitude: float = Query(..., description="Latitude"),
+    longitude: float = Query(..., description="Longitude"),
+    timezone: str = Query(DEFAULT_TZ, description="IANA timezone string"),
+    midday_only: bool = Query(True, description="Rainfall: return only the 12:00 reading per day"),
+):
+    """
+    1. Fetches rainfall data → saves to **rainfall_data.txt**
+    2. Fetches temperature data → saves to **temperature_data.txt**
+    3. Passes both files to the LLM and returns a fertiliser recommendation.
+    """
+    # Step 1 — rainfall
+    get_rainfall(latitude=latitude, longitude=longitude, timezone=timezone, midday_only=midday_only)
+
+    # Step 2 — temperature
+    get_temperature(latitude=latitude, longitude=longitude, timezone=timezone)
+
+    # Step 3 — read saved files and analyse
+    temperature_data = _read("temperature_data.txt")
+    rainfall_data = _read("rainfall_data.txt")
+
+    recommendation = _analyse_with_llm(temperature_data, rainfall_data)
+
+    return AnalysisResponse(
+        generated_at=datetime.now().strftime("%A, %B %d, %Y at %H:%M:%S"),
+        recommendation=recommendation,
+    )
