@@ -10,19 +10,16 @@ const RA = 25; // extraterrestrial radiation MJ/m²/day (annual average)
 
 const CROP_KC: Record<CropType, number> = {
   lettuce: 1.0,
-  onion: 1.05,
   potato: 1.15,
 };
 
 const CROP_DMAX: Record<CropType, number> = {
   lettuce: 12,
-  onion: 15,
   potato: 20,
 };
 
 const CROP_LOSS_LIMIT: Record<CropType, number> = {
   lettuce: 20,
-  onion: 25,
   potato: 25,
 };
 
@@ -112,28 +109,27 @@ export function buildPlan(
     const rain = days.map((p) => p.rainMm);
 
     // INC[d] = max(R[d], R[d+1]) — rain within 48h for incorporation
-    const inc =
-      Math.max(rain[d] ?? 0, rain[d + 1] ?? 0);
+    const inc = Math.max(rain[d] ?? 0, rain[d + 1] ?? 0);
 
     // LOSS[d] = sum(R[d..d+2]) — how wet the 72h after application
-    const loss =
-      (rain[d] ?? 0) + (rain[d + 1] ?? 0) + (rain[d + 2] ?? 0);
+    const loss = (rain[d] ?? 0) + (rain[d + 1] ?? 0) + (rain[d + 2] ?? 0);
 
     // HEAVY[d] = max(R[d..d+2]) — single-day downpour risk
-    const heavy =
-      Math.max(rain[d] ?? 0, rain[d + 1] ?? 0, rain[d + 2] ?? 0);
+    const heavy = Math.max(rain[d] ?? 0, rain[d + 1] ?? 0, rain[d + 2] ?? 0);
 
     const hot = days[d].maxTemperatureC >= 25;
 
     // Rule A: Hard rejection filters
     if (heavy >= 20) {
       days[d].fertStatus = "rejected";
-      days[d].fertReason = `Heavy rain risk (${heavy.toFixed(0)}mm peak in 72h). Runoff would wash away fertilizer.`;
+      days[d].fertReason =
+        `Heavy rain risk (${heavy.toFixed(0)}mm peak in 72h). Runoff would wash away fertilizer.`;
       continue;
     }
     if (loss >= lossLimit) {
       days[d].fertStatus = "rejected";
-      days[d].fertReason = `Too wet (${loss.toFixed(0)}mm over 72h). Leaching risk too high.`;
+      days[d].fertReason =
+        `Too wet (${loss.toFixed(0)}mm over 72h). Leaching risk too high.`;
       continue;
     }
 
@@ -148,7 +144,8 @@ export function buildPlan(
 
     // If not enough rain for incorporation, mark as "none" for now
     days[d].fertStatus = "none";
-    days[d].fertReason = `Insufficient rain for natural incorporation (${inc.toFixed(0)}mm in 48h).`;
+    days[d].fertReason =
+      `Insufficient rain for natural incorporation (${inc.toFixed(0)}mm in 48h).`;
   }
 
   // Rule C: If a "good" day is hot, prefer a cooler alternative
@@ -176,9 +173,10 @@ export function buildPlan(
       const fertIrrigation = Math.max(0, 10 - inc);
       candidate.fertStatus = "irrigate-in";
       candidate.fertIrrigationMm = Math.round(fertIrrigation * 100) / 100;
-      candidate.fertReason = fertIrrigation > 0
-        ? `No natural rain window. Apply ${fertIrrigation.toFixed(0)}mm irrigation within 24h to incorporate fertilizer.`
-        : "No ideal rain window, but enough moisture for incorporation.";
+      candidate.fertReason =
+        fertIrrigation > 0
+          ? `No natural rain window. Apply ${fertIrrigation.toFixed(0)}mm irrigation within 24h to incorporate fertilizer.`
+          : "No ideal rain window, but enough moisture for incorporation.";
     } else {
       // Rule E: all days rejected
     }

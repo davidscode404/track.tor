@@ -29,7 +29,6 @@ import type { CropType, DayPlan, FertStatus, PlannerResult } from "@/lib/types";
 
 const CROP_DMAX: Record<CropType, number> = {
   lettuce: 12,
-  onion: 15,
   potato: 20,
 };
 
@@ -39,7 +38,6 @@ interface PlannerPanelProps {
 
 const CROP_LABELS: Record<string, string> = {
   lettuce: "Lettuce",
-  onion: "Onion",
   potato: "Potato",
 };
 

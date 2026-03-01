@@ -1,27 +1,11 @@
-import type { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
+import type {
+  Feature,
+  FeatureCollection,
+  MultiPolygon,
+  Polygon,
+} from "geojson";
 
 export type FarmGeometry = FeatureCollection<Polygon | MultiPolygon>;
-
-export interface Farm {
-  id: string;
-  name: string;
-  boundaryGeoJson: FarmGeometry;
-  areaHectares: number;
-  centroidLat: number;
-  centroidLng: number;
-  createdAt: string;
-}
-
-export interface MonthlyRecord {
-  id: string;
-  farmId: string;
-  month: string;
-  fertilizerKg: number;
-  fertilizerCostUsd: number;
-  expectedYieldTons: number;
-  actualTotalCostUsd: number;
-  notes: string | null;
-}
 
 export interface DailyWeather {
   date: string;
@@ -31,7 +15,7 @@ export interface DailyWeather {
   maxTemperatureC: number;
 }
 
-export type CropType = "lettuce" | "onion" | "potato";
+export type CropType = "lettuce" | "potato";
 
 export type FertStatus = "good" | "rejected" | "irrigate-in" | "none";
 
@@ -72,38 +56,6 @@ export interface WeatherSummary {
   rawPayload: unknown;
   note?: string;
   daily?: DailyWeather[];
-}
-
-export interface PredictionDriver {
-  key: string;
-  label: string;
-  contribution: number;
-}
-
-export interface PredictionResult {
-  targetMonth: string;
-  baseCostUsd: number;
-  optimisticCostUsd: number;
-  pessimisticCostUsd: number;
-  deltaVsLastMonthPct: number;
-  drySeason: boolean;
-  drivers: PredictionDriver[];
-  budgetByPeriod: {
-    days30: number;
-    days60: number;
-    days90: number;
-  };
-  uncertainty: number;
-}
-
-export interface PredictionInputFeatures {
-  avgCost3m: number;
-  fertIntensity: number;
-  yieldTrend: number;
-  rainAnomaly: number;
-  windStress: number;
-  dryIndex: number;
-  recentCostTrend: number;
 }
 
 export interface BoundaryMetrics {

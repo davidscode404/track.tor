@@ -7,9 +7,15 @@ import { openMeteoWeatherProvider } from "@/lib/weather";
 import { UK_BOUNDING_BOX } from "@/lib/geo";
 
 const fertilizeSchema = z.object({
-  lat: z.coerce.number().min(UK_BOUNDING_BOX.minLat).max(UK_BOUNDING_BOX.maxLat),
-  lng: z.coerce.number().min(UK_BOUNDING_BOX.minLng).max(UK_BOUNDING_BOX.maxLng),
-  crop: z.enum(["lettuce", "onion", "potato"]).default("lettuce"),
+  lat: z.coerce
+    .number()
+    .min(UK_BOUNDING_BOX.minLat)
+    .max(UK_BOUNDING_BOX.maxLat),
+  lng: z.coerce
+    .number()
+    .min(UK_BOUNDING_BOX.minLng)
+    .max(UK_BOUNDING_BOX.maxLng),
+  crop: z.enum(["lettuce", "potato"]).default("lettuce"),
   periodStart: z.string().date().optional(),
   periodEnd: z.string().date().optional(),
 });
@@ -20,7 +26,10 @@ export async function POST(request: Request) {
     const parsed = fertilizeSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+      return NextResponse.json(
+        { error: parsed.error.flatten() },
+        { status: 400 },
+      );
     }
 
     const { lat, lng, crop } = parsed.data;

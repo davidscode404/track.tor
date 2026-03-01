@@ -28,16 +28,18 @@ export default function Home() {
         <p className="mt-4 max-w-xl text-lg text-white/90 sm:text-xl">
           Select a UK location, check weather, and know when to fertilize.
         </p>
-        <Button
-          asChild
-          size="lg"
-          className="mt-8 gap-2 rounded-full bg-emerald-600 px-8 py-6 text-base font-medium text-black  shadow-lg hover:bg-emerald-500"
-        >
-          <Link href="/map">
-            <Sprout className="size-5" />
-            Get Started
-          </Link>
-        </Button>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <Button
+            asChild
+            size="lg"
+            className="gap-2 rounded-full bg-emerald-600 px-8 py-6 text-base font-medium text-black shadow-lg hover:bg-emerald-500"
+          >
+            <Link href="/map">
+              <Sprout className="size-5" />
+              Get Started
+            </Link>
+          </Button>
+        </div>
       </section>
     </main>
   );

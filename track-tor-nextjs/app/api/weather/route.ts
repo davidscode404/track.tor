@@ -8,7 +8,8 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const today = formatISODate(new Date());
-    const hasLatLng = url.searchParams.has("lat") && url.searchParams.has("lng");
+    const hasLatLng =
+      url.searchParams.has("lat") && url.searchParams.has("lng");
     const defaultFrom = hasLatLng ? addDays(today, -7) : addDays(today, -30);
 
     const parseResult = weatherQuerySchema.safeParse({
@@ -20,7 +21,10 @@ export async function GET(request: Request) {
     });
 
     if (!parseResult.success) {
-      return NextResponse.json({ error: parseResult.error.flatten() }, { status: 400 });
+      return NextResponse.json(
+        { error: parseResult.error.flatten() },
+        { status: 400 },
+      );
     }
 
     const { lat, lng, from, to, daily } = parseResult.data;
@@ -28,7 +32,7 @@ export async function GET(request: Request) {
     if (lat == null || lng == null) {
       return NextResponse.json(
         { error: "Both lat and lng are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -44,9 +48,10 @@ export async function GET(request: Request) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Failed to fetch weather",
+        error:
+          error instanceof Error ? error.message : "Failed to fetch weather",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

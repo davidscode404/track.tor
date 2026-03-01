@@ -13,8 +13,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { WeatherPanel } from "./weather-summary";
+import { CropHealthCheck } from "@/components/identify/crop-health-check";
 import { PlannerPanel } from "./planner-results";
+import { WeatherPanel } from "./weather-summary";
 import type { CropType, PlannerResult, WeatherSummary } from "@/lib/types";
 
 const DynamicLocationPickerMap = dynamic(
@@ -76,7 +77,6 @@ type PeriodDays = 7 | 14;
 
 const CROP_OPTIONS: { value: CropType; label: string; emoji: string }[] = [
   { value: "lettuce", label: "Lettuce", emoji: "🥬" },
-  { value: "onion", label: "Onion", emoji: "🧅" },
   { value: "potato", label: "Potato", emoji: "🥔" },
 ];
 
@@ -311,6 +311,9 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                         </Button>
                       ))}
                     </ButtonGroup>
+                  </div>
+                  <div className="border-t border-white/10 px-5 py-3">
+                    <CropHealthCheck crop={crop} compact />
                   </div>
                   <WeatherPanel weather={weather} periodDays={periodDays} />
                   <div className="flex flex-col gap-3 border-t border-white/10 p-5">
