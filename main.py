@@ -79,6 +79,12 @@ def _fetch(url: str) -> dict:
         raise HTTPException(status_code=502, detail=f"Upstream error: {exc}")
 
 
+def _save(filename: str, records: list[BaseModel]) -> None:
+    with open(filename, "w") as f:
+        for record in records:
+            f.write(record.model_dump_json() + "\n")
+
+
 # ── endpoints ──────────────────────────────────────────────────────────────────
 @app.get("/rainfall", response_model=list[RainfallEntry], summary="16-day rainfall forecast")
 def get_rainfall(
@@ -90,6 +96,7 @@ def get_rainfall(
     """
     Returns hourly precipitation, rain, and snowfall data.
     Set **midday_only=false** to get all hourly readings.
+    Results are also saved to rainfall_data.txt.
     """
     url = (
         "https://api.open-meteo.com/v1/forecast"
@@ -114,6 +121,8 @@ def get_rainfall(
                 snowfall_cm=hourly["snowfall"][i],
             )
         )
+
+    _save("rainfall_data.txt", results)
     return results
 
 
@@ -125,6 +134,7 @@ def get_temperature(
 ):
     """
     Returns hourly 2 m temperature and apparent (feels-like) temperature.
+    Results are also saved to sunlight_data.txt.
     """
     url = (
         "https://api.open-meteo.com/v1/forecast"
@@ -137,7 +147,7 @@ def get_temperature(
     data = _fetch(url)
     hourly = data["hourly"]
 
-    return [
+    results = [
         TemperatureEntry(
             time=time,
             temperature_c=hourly["temperature_2m"][i],
@@ -178,3 +188,6 @@ async def predict(crop: str = Form(...), file: UploadFile = File(...)):
         "confidence": float(probs[idx]),
         "classes": classes,
     }
+
+    _save("sunlight_data.txt", results)
+    return results
