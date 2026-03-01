@@ -2,7 +2,15 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
-import { BotMessageSquare, CloudRain, Loader2, MapPin, RotateCcw, Sprout, X } from "lucide-react";
+import {
+  BotMessageSquare,
+  CloudRain,
+  Loader2,
+  MapPin,
+  RotateCcw,
+  Sprout,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -17,7 +25,7 @@ import { CropHealthCheck } from "@/components/identify/crop-health-check";
 import { PlannerPanel } from "./planner-results";
 import { WeatherPanel } from "./weather-summary";
 import type { CropType, PlannerResult, WeatherSummary } from "@/lib/types";
-
+import Link from "next/link";
 const DynamicLocationPickerMap = dynamic(
   () => import("./location-picker-map").then((mod) => mod.LocationPickerMap),
   {
@@ -89,7 +97,9 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
   const [lng, setLng] = useState<number | null>(null);
   const [weather, setWeather] = useState<WeatherSummary | null>(null);
   const [plan, setPlan] = useState<PlannerResult | null>(null);
-  const [llmRecommendation, setLlmRecommendation] = useState<string | null>(null);
+  const [llmRecommendation, setLlmRecommendation] = useState<string | null>(
+    null,
+  );
   const [recommendLoading, setRecommendLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -188,10 +198,21 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
     if (!weather) return;
     setRecommendLoading(true);
     try {
-      const payload = weather.rawPayload as {
-        rainfallEntries?: { time: string; precipitation_mm: number; rain_mm: number; snowfall_cm: number }[];
-        temperatureEntries?: { time: string; temperature_c: number; feels_like_c: number }[];
-      } | undefined;
+      const payload = weather.rawPayload as
+        | {
+            rainfallEntries?: {
+              time: string;
+              precipitation_mm: number;
+              rain_mm: number;
+              snowfall_cm: number;
+            }[];
+            temperatureEntries?: {
+              time: string;
+              temperature_c: number;
+              feels_like_c: number;
+            }[];
+          }
+        | undefined;
 
       if (!payload?.rainfallEntries || !payload?.temperatureEntries) {
         throw new Error("Weather data not available for recommendation.");
@@ -249,9 +270,11 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       <div className="pointer-events-none fixed left-4 top-4 z-30">
         <div className="pointer-events-auto inline-flex items-center gap-2 rounded-lg bg-black/90 border border-white/10 px-3 py-2 backdrop-blur-md">
           <Sprout className="size-4 text-emerald-400" />
-          <span className="text-xs font-semibold tracking-[0.15em] text-white/90 uppercase">
-            Track-Tor
-          </span>
+          <Link href="/">
+            <span className="text-xs font-semibold tracking-[0.15em] text-white/90 uppercase">
+              Track-Tor
+            </span>
+          </Link>
         </div>
       </div>
 
@@ -386,7 +409,10 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
 
               {step === 3 && plan && (
                 <div className="flex flex-col">
-                  <PlannerPanel plan={plan} llmRecommendation={llmRecommendation} />
+                  <PlannerPanel
+                    plan={plan}
+                    llmRecommendation={llmRecommendation}
+                  />
                   <div className="mt-auto flex flex-col gap-2 border-t border-white/10 p-5">
                     {!llmRecommendation && (
                       <Button
@@ -400,7 +426,9 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                         ) : (
                           <BotMessageSquare className="size-3.5" />
                         )}
-                        {recommendLoading ? "Generating…" : "Get AI Recommendation"}
+                        {recommendLoading
+                          ? "Generating…"
+                          : "Get AI Recommendation"}
                       </Button>
                     )}
                     {error && step === 3 && (
