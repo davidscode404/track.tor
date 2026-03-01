@@ -194,9 +194,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       <DynamicLocationPickerMap
         accessToken={mapboxToken}
         onLocationSelect={handleLocationSelect}
-        selection={
-          lat != null && lng != null ? { lat, lng } : null
-        }
+        selection={lat != null && lng != null ? { lat, lng } : null}
       />
 
       <div className="pointer-events-none fixed left-4 top-4 z-30">
