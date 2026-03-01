@@ -11,6 +11,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@mapbox/mapbox-gl-draw": "^1.5.1",
     "@mapbox/point-geometry": "^1.1.0",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-select": "^2.2.6",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/mapbox__mapbox-gl-draw": "^1.4.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

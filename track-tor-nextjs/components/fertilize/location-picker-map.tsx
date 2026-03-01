@@ -2,20 +2,30 @@
 
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
 
-import { UK_BOUNDING_BOX } from "@/lib/geo";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+
+import {
+  UK_BOUNDING_BOX,
+  isBoundaryWithinUk,
+  computeBoundaryMetrics,
+} from "@/lib/geo";
+import type { FarmGeometry } from "@/lib/types";
 
 interface LocationPickerMapProps {
   accessToken: string;
   onLocationSelect: (lat: number, lng: number) => void;
+  selection?: { lat: number; lng: number } | null;
 }
 
 export function LocationPickerMap({
   accessToken,
   onLocationSelect,
+  selection = null,
 }: LocationPickerMapProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const drawRef = useRef<MapboxDraw | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const onLocationSelectRef = useRef(onLocationSelect);
 
@@ -46,43 +56,79 @@ export function LocationPickerMap({
       "top-right",
     );
 
-    map.on(
-      "click",
-      (e: mapboxgl.MapMouseEvent & { lngLat: mapboxgl.LngLat }) => {
-        const { lng, lat } = e.lngLat;
-        if (
-          lat >= UK_BOUNDING_BOX.minLat &&
-          lat <= UK_BOUNDING_BOX.maxLat &&
-          lng >= UK_BOUNDING_BOX.minLng &&
-          lng <= UK_BOUNDING_BOX.maxLng
-        ) {
-          if (!markerRef.current) {
-            markerRef.current = new mapboxgl.Marker({ color: "#2563eb" })
-              .setLngLat([lng, lat])
-              .addTo(map);
-          } else {
-            markerRef.current.setLngLat([lng, lat]);
-          }
-          onLocationSelectRef.current(lat, lng);
-        }
+    const draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {
+        polygon: true,
+        trash: true,
       },
-    );
+      defaultMode: "draw_polygon",
+    });
+    drawRef.current = draw;
 
-    map.on("load", () => map.resize());
+    function updateFromDraw() {
+      const data = draw.getAll();
+      if (data.features.length === 0) return;
+
+      const feature = data.features[0];
+      if (feature.geometry.type !== "Polygon") return;
+
+      const boundary: FarmGeometry = {
+        type: "FeatureCollection",
+        features: [feature as FarmGeometry["features"][0]],
+      };
+
+      if (!isBoundaryWithinUk(boundary)) {
+        draw.deleteAll();
+        return;
+      }
+
+      try {
+        const { centroidLat, centroidLng } = computeBoundaryMetrics(boundary);
+        onLocationSelectRef.current(centroidLat, centroidLng);
+      } catch {
+        draw.deleteAll();
+      }
+    }
+
+    function onMapLoad() {
+      map.addControl(draw as unknown as mapboxgl.IControl, "bottom-left");
+      map.on("draw.create", updateFromDraw);
+      map.on("draw.update", updateFromDraw);
+      map.resize();
+    }
+
+    if (map.loaded()) {
+      onMapLoad();
+    } else {
+      map.once("load", onMapLoad);
+    }
 
     mapRef.current = map;
 
     return () => {
       map.remove();
       mapRef.current = null;
-      markerRef.current = null;
+      drawRef.current = null;
     };
   }, [accessToken]);
+
+  useEffect(() => {
+    if (selection !== null) return;
+    const draw = drawRef.current;
+    const map = mapRef.current;
+    if (!draw || !map) return;
+    try {
+      draw.deleteAll();
+    } catch {
+      // Draw may not be initialized yet (map not loaded) or already torn down
+    }
+  }, [selection]);
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0"
+      className="fixed inset-0 z-0"
       style={{ width: "100vw", height: "100vh" }}
     />
   );

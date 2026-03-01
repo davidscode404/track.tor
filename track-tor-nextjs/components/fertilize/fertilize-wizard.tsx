@@ -194,6 +194,9 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       <DynamicLocationPickerMap
         accessToken={mapboxToken}
         onLocationSelect={handleLocationSelect}
+        selection={
+          lat != null && lng != null ? { lat, lng } : null
+        }
       />
 
       <div className="pointer-events-none fixed left-4 top-4 z-30">
@@ -245,8 +248,8 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
                 <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
                   <MapPin className="size-10 text-white/30" />
                   <p className="text-sm text-white/55">
-                    Select a location on the map, then click Check Weather to
-                    view forecast and plan.
+                    Draw a polygon on the map to select an area, then click
+                    Check Weather to view forecast and plan.
                   </p>
                 </div>
               )}
@@ -359,7 +362,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
               <div className="flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900 px-5 py-3 shadow-xl backdrop-blur-md">
                 <MapPin className="size-4 text-emerald-400" />
                 <span className="text-sm text-white/90">
-                  Click anywhere on the map to select a location
+                  Draw a polygon on the map to select an area
                 </span>
               </div>
             ) : (
