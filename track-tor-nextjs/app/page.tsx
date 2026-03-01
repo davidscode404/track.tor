@@ -21,23 +21,29 @@ export default function Home() {
         <source src={HERO_VIDEO_URL} type="video/mp4" />
       </video>
       <div className="absolute inset-0 bg-black/50" aria-hidden />
+
       <section className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center">
-        <h1 className="text-shadow-md text-shadow-zinc-900 text-4xl font-semibold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
-          Plan Your Fertilization Timing
+        <div className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 backdrop-blur-md mb-4">
+          <Sprout className="size-5 text-emerald-400" />
+          <span className="text-base font-semibold tracking-[0.15em] text-white uppercase">
+            Track-Tor
+          </span>
+        </div>
+
+        <h1 className="text-shadow-md text-shadow-zinc-900 text-4xl font-semibold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-5xl">
+          Intelligent crop fertilisation & irrigation planner
         </h1>
         <p className="mt-4 max-w-xl text-lg text-white/90 sm:text-xl">
-          Select a UK location, check weather, and know when to fertilize.
+          Select a location, crop type, check weather, and know the perfect time
+          for your tasks.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Button
             asChild
             size="lg"
-            className="gap-2 rounded-full bg-emerald-600 px-8 py-6 text-base font-medium text-black shadow-lg hover:bg-emerald-500"
+            className="rounded-full bg-emerald-600 px-8 py-6 text-base font-medium text-black shadow-lg hover:bg-emerald-500"
           >
-            <Link href="/map">
-              <Sprout className="size-5" />
-              Get Started
-            </Link>
+            <Link href="/map">Get Started</Link>
           </Button>
         </div>
       </section>
