@@ -156,6 +156,9 @@ def get_temperature(
         for i, time in enumerate(hourly["time"])
     ]
 
+    _save("temperature_data.txt", results)
+    return results
+
 
 @app.get("/health")
 def health():
@@ -188,6 +191,3 @@ async def predict(crop: str = Form(...), file: UploadFile = File(...)):
         "confidence": float(probs[idx]),
         "classes": classes,
     }
-
-    _save("sunlight_data.txt", results)
-    return results
