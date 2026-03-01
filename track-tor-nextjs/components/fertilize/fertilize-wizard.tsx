@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
-import { CloudRain, Loader2, MapPin, RotateCcw, Sprout, X } from "lucide-react";
+import { BotMessageSquare, CloudRain, Loader2, MapPin, RotateCcw, Sprout, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -89,6 +89,8 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
   const [lng, setLng] = useState<number | null>(null);
   const [weather, setWeather] = useState<WeatherSummary | null>(null);
   const [plan, setPlan] = useState<PlannerResult | null>(null);
+  const [llmRecommendation, setLlmRecommendation] = useState<string | null>(null);
+  const [recommendLoading, setRecommendLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,6 +100,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
       setLng(newLng);
       setWeather(null);
       setPlan(null);
+      setLlmRecommendation(null);
       setError(null);
       if (step !== 1) setStep(1);
     },
@@ -170,6 +173,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
         throw new Error("Response is missing plan data.");
       }
       setPlan(data.plan);
+      setLlmRecommendation(null);
       if (data.weather) setWeather(data.weather);
       setStep(3);
       setDrawerOpen(true);
@@ -180,12 +184,57 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
     }
   }, [lat, lng, periodDays, crop]);
 
+  const handleGetRecommendation = useCallback(async () => {
+    if (!weather) return;
+    setRecommendLoading(true);
+    try {
+      const payload = weather.rawPayload as {
+        rainfallEntries?: { time: string; precipitation_mm: number; rain_mm: number; snowfall_cm: number }[];
+        temperatureEntries?: { time: string; temperature_c: number; feels_like_c: number }[];
+      } | undefined;
+
+      if (!payload?.rainfallEntries || !payload?.temperatureEntries) {
+        throw new Error("Weather data not available for recommendation.");
+      }
+
+      const temperatureData = payload.temperatureEntries
+        .map((e) => JSON.stringify(e))
+        .join("\n");
+      const rainfallData = payload.rainfallEntries
+        .map((e) => JSON.stringify(e))
+        .join("\n");
+
+      const res = await fetch("/api/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          temperature_data: temperatureData,
+          rainfall_data: rainfallData,
+          crop,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          typeof data.error === "string" ? data.error : "Recommendation failed",
+        );
+      }
+      setLlmRecommendation(data.recommendation ?? null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to get recommendation");
+    } finally {
+      setRecommendLoading(false);
+    }
+  }, [weather, crop]);
+
   const handleStartOver = useCallback(() => {
     setStep(1);
     setLat(null);
     setLng(null);
     setWeather(null);
     setPlan(null);
+    setLlmRecommendation(null);
     setError(null);
   }, []);
 
@@ -337,8 +386,26 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
 
               {step === 3 && plan && (
                 <div className="flex flex-col">
-                  <PlannerPanel plan={plan} />
-                  <div className="mt-auto border-t border-white/10 p-5">
+                  <PlannerPanel plan={plan} llmRecommendation={llmRecommendation} />
+                  <div className="mt-auto flex flex-col gap-2 border-t border-white/10 p-5">
+                    {!llmRecommendation && (
+                      <Button
+                        size="sm"
+                        onClick={handleGetRecommendation}
+                        disabled={recommendLoading}
+                        className="w-full gap-1.5 rounded-full bg-violet-600 text-white hover:bg-violet-500"
+                      >
+                        {recommendLoading ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <BotMessageSquare className="size-3.5" />
+                        )}
+                        {recommendLoading ? "Generating…" : "Get AI Recommendation"}
+                      </Button>
+                    )}
+                    {error && step === 3 && (
+                      <p className="text-xs text-red-400">{error}</p>
+                    )}
                     <Button
                       size="sm"
                       variant="outline"

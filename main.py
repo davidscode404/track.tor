@@ -84,6 +84,12 @@ class AnalysisResponse(BaseModel):
     recommendation: str
 
 
+class AnalyseRequest(BaseModel):
+    temperature_data: str
+    rainfall_data: str
+    crop: str = "potato"
+
+
 # ── helpers ────────────────────────────────────────────────────────────────────
 def _fetch(url: str) -> dict:
     try:
@@ -104,9 +110,9 @@ def _read(filepath: str) -> str:
         return f.read().strip()
 
 
-def _analyse_with_llm(temperature_data: str, rainfall_data: str) -> str:
+def _analyse_with_llm(temperature_data: str, rainfall_data: str, crop: str = "potato") -> str:
     now = datetime.now()
-    prompt = f"""Based on this temperature and rainfall data alone, what fertiliser usage would you recommend for a potato field?
+    prompt = f"""Based on this temperature and rainfall data alone, what fertiliser usage would you recommend for a {crop} field?
 
 Date: {now.strftime("%A, %B %d, %Y")} at {now.strftime("%H:%M:%S")}
 
@@ -267,7 +273,21 @@ def analyse(
     temperature_data = _read("temperature_data.txt")
     rainfall_data = _read("rainfall_data.txt")
 
-    recommendation = _analyse_with_llm(temperature_data, rainfall_data)
+    recommendation = _analyse_with_llm(temperature_data, rainfall_data, "potato")
+
+    return AnalysisResponse(
+        generated_at=datetime.now().strftime("%A, %B %d, %Y at %H:%M:%S"),
+        recommendation=recommendation,
+    )
+
+
+@app.post("/analyse", response_model=AnalysisResponse, summary="LLM fertiliser recommendation from provided weather data")
+def analyse_post(body: AnalyseRequest):
+    """
+    Accepts pre-fetched temperature and rainfall data (one JSON object per line)
+    plus a crop type, and returns a fertiliser recommendation via LLM.
+    """
+    recommendation = _analyse_with_llm(body.temperature_data, body.rainfall_data, body.crop)
 
     return AnalysisResponse(
         generated_at=datetime.now().strftime("%A, %B %d, %Y at %H:%M:%S"),

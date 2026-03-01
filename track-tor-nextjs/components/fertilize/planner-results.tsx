@@ -17,6 +17,7 @@ import {
   CloudRain,
   Thermometer,
   AlertTriangle,
+  BotMessageSquare,
 } from "lucide-react";
 
 import {
@@ -34,6 +35,7 @@ const CROP_DMAX: Record<CropType, number> = {
 
 interface PlannerPanelProps {
   plan: PlannerResult;
+  llmRecommendation?: string | null;
 }
 
 const CROP_LABELS: Record<string, string> = {
@@ -82,7 +84,7 @@ const STATUS_CONFIG: Record<
   },
 };
 
-export function PlannerPanel({ plan }: PlannerPanelProps) {
+export function PlannerPanel({ plan, llmRecommendation }: PlannerPanelProps) {
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const maxDeficit = Math.max(...plan.days.map((d) => d.deficit), 1);
 
@@ -194,6 +196,21 @@ export function PlannerPanel({ plan }: PlannerPanelProps) {
 
       {/* Irrigation events */}
       <IrrigationSummary days={plan.days} />
+
+      {/* AI recommendation */}
+      {llmRecommendation && (
+        <div className="mt-4 rounded-xl border border-violet-500/25 bg-violet-500/10 p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <BotMessageSquare className="size-4 text-violet-400" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-violet-300">
+              AI Recommendation
+            </span>
+          </div>
+          <p className="whitespace-pre-wrap text-xs leading-relaxed text-white/70">
+            {llmRecommendation}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
