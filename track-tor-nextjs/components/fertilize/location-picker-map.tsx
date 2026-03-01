@@ -120,6 +120,7 @@ export function LocationPickerMap({
     if (!draw || !map) return;
     try {
       draw.deleteAll();
+      (draw as MapboxDraw & { changeMode: (mode: string) => void }).changeMode("draw_polygon");
     } catch {
       // Draw may not be initialized yet (map not loaded) or already torn down
     }

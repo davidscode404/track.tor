@@ -257,6 +257,7 @@ export function FertilizeWizard({ mapboxToken }: FertilizeWizardProps) {
     setPlan(null);
     setLlmRecommendation(null);
     setError(null);
+    setDrawerOpen(false);
   }, []);
 
   return (
