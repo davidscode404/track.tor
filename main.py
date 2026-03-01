@@ -132,7 +132,7 @@ Rainfall Data:
         "openrouter/router",
         arguments={
             "prompt": prompt,
-            "model": "openai/gpt-4.1",
+            "model": "nvidia/nemotron-nano-12b-v2-vl:free",
         },
         with_logs=True,
         on_queue_update=on_queue_update,
