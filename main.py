@@ -1,11 +1,20 @@
+import os
 import urllib.request
 import json
+from datetime import datetime
+
+import fal_client
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
+load_dotenv()
+
+FAL_KEY = os.getenv("FAL_KEY")
+
 app = FastAPI(
     title="Weather API",
-    description="Rainfall and temperature forecasts via Open-Meteo",
+    description="Rainfall and temperature forecasts via Open-Meteo, with LLM fertiliser analysis",
     version="1.0.0",
 )
 
@@ -27,6 +36,11 @@ class TemperatureEntry(BaseModel):
     feels_like_c: float
 
 
+class AnalysisResponse(BaseModel):
+    generated_at: str
+    recommendation: str
+
+
 # ── helpers ────────────────────────────────────────────────────────────────────
 def _fetch(url: str) -> dict:
     try:
@@ -42,7 +56,43 @@ def _save(filename: str, records: list[BaseModel]) -> None:
             f.write(record.model_dump_json() + "\n")
 
 
-# ── endpoints ──────────────────────────────────────────────────────────────────
+def _read(filepath: str) -> str:
+    with open(filepath, "r", encoding="utf-8") as f:
+        return f.read().strip()
+
+
+def _analyse_with_llm(sunlight_data: str, rainfall_data: str) -> str:
+    now = datetime.now()
+    prompt = f"""Based on this sunlight and rainfall data alone, what fertiliser usage would you recommend for a potato field?
+
+Date: {now.strftime("%A, %B %d, %Y")} at {now.strftime("%H:%M:%S")}
+
+Sunlight Data:
+{sunlight_data}
+
+Rainfall Data:
+{rainfall_data}
+"""
+
+    def on_queue_update(update):
+        if isinstance(update, fal_client.InProgress):
+            for log in update.logs:
+                print(log["message"])
+
+    result = fal_client.subscribe(
+        "openrouter/router",
+        arguments={
+            "prompt": prompt,
+            "model": "nvidia/nemotron-nano-9b-v2:free",
+        },
+        with_logs=True,
+        on_queue_update=on_queue_update,
+    )
+
+    return result.get("output", "")
+
+
+# ── individual endpoints ───────────────────────────────────────────────────────
 @app.get("/rainfall", response_model=list[RainfallEntry], summary="16-day rainfall forecast")
 def get_rainfall(
     latitude: float = Query(..., description="Latitude"),
@@ -115,3 +165,34 @@ def get_temperature(
 
     _save("sunlight_data.txt", results)
     return results
+
+
+# ── combined analysis endpoint ─────────────────────────────────────────────────
+@app.get("/analyse", response_model=AnalysisResponse, summary="Fetch weather data and get LLM fertiliser recommendation")
+def analyse(
+    latitude: float = Query(..., description="Latitude"),
+    longitude: float = Query(..., description="Longitude"),
+    timezone: str = Query(DEFAULT_TZ, description="IANA timezone string"),
+    midday_only: bool = Query(True, description="Rainfall: return only the 12:00 reading per day"),
+):
+    """
+    1. Fetches rainfall data → saves to **rainfall_data.txt**
+    2. Fetches temperature data → saves to **sunlight_data.txt**
+    3. Passes both files to the LLM and returns a fertiliser recommendation.
+    """
+    # Step 1 — rainfall
+    get_rainfall(latitude=latitude, longitude=longitude, timezone=timezone, midday_only=midday_only)
+
+    # Step 2 — temperature / sunlight
+    get_temperature(latitude=latitude, longitude=longitude, timezone=timezone)
+
+    # Step 3 — read saved files and analyse
+    sunlight_data = _read("sunlight_data.txt")
+    rainfall_data = _read("rainfall_data.txt")
+
+    recommendation = _analyse_with_llm(sunlight_data, rainfall_data)
+
+    return AnalysisResponse(
+        generated_at=datetime.now().strftime("%A, %B %d, %Y at %H:%M:%S"),
+        recommendation=recommendation,
+    )
